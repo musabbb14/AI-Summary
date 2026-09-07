@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}About — AI Document Summarization System{% endblock %}
+{% block og_title %}About the AI Document Summarization System{% endblock %}
+
+{% block content %}
+
+<!-- About Hero -->
+<section class="about-hero page-hero" aria-labelledby="about-title">
+  <div class="page-hero-badge">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12" stroke="white" stroke-width="2"/><line x1="12" y1="16" x2="12.01" y2="16" stroke="white" stroke-width="2"/></svg>
+    Final Year Project
+  </div>
+  <h1 id="about-title">About This Project</h1>
+  <p class="page-hero-subtitle">Document Summarization Using TF-IDF and MMR with Diagram and Code Preservation for Technical PDF Documents &mdash; Gombe State University, Department of Computer Science.</p>
+</section>
+
+<!-- Project Overview -->
+<section class="page-section" aria-labelledby="overview-heading">
+  <h2 id="overview-heading" class="section-title">Project Overview</h2>
+  <div class="page-card">
+    <p>This system is an undergraduate final-year Computer Science project that enables anyone &mdash; students, academics, researchers, and professionals &mdash; to upload a document of any length and receive back an intelligent, structured summary without requiring any programming knowledge.</p>
+    <p>The system implements a <em>multi-factor extractive summarization</em> pipeline using TF-IDF sentence scoring combined with Maximal Marginal Relevance (MMR) for diversity-guaranteed sentence selection. Long documents are split into overlapping chunks and each chunk is scored independently, enabling accurate summarization of documents of any length &mdash; from a single page to an entire textbook. Before summarization, the system automatically strips repeated page headers, footers, course codes, watermarks, and other non-content decorations to ensure only genuine document body text is processed.</p>
+  </div>
+</section>
+
+<!-- How It Works -->
+<section class="page-section" aria-labelledby="howitworks-heading">
+  <h2 id="howitworks-heading" class="section-title">How It Works</h2>
+  <div class="steps-grid">
+    <div class="step-card">
+      <div class="step-number" aria-hidden="true">1</div>
+      <div class="step-icon" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </div>
+      <h3>Upload</h3>
+      <p>Upload a PDF, DOCX, or TXT file (up to 20 MB) via drag-and-drop or file browser. Files are validated immediately and processed securely on the server.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-number" aria-hidden="true">2</div>
+      <div class="step-icon" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </div>
+      <h3>Extract &amp; Clean</h3>
+      <p>Text is extracted using PyMuPDF (PDFs), python-docx (DOCX), or standard I/O (TXT). A two-pass algorithm detects and removes repeated headers, footers, page numbers, watermarks, and figure captions before summarization.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-number" aria-hidden="true">3</div>
+      <div class="step-icon" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 100 20 10 10 0 000-20z"/><path d="M8 12h4l2 4"/><path d="M10 8l2-2 2 2"/></svg>
+      </div>
+      <h3>Chunk &amp; Summarize</h3>
+      <p>Long documents are split into overlapping chunks. Each chunk is scored using TF-IDF, centrality, and content-type analysis, then the most informative sentences are selected using Maximal Marginal Relevance (MMR) to ensure diversity. The result is grouped into a coherent final summary with labelled headings.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-number" aria-hidden="true">4</div>
+      <div class="step-icon" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </div>
+      <h3>Deliver &amp; Export</h3>
+      <p>The structured summary is displayed with key highlights, topic keywords, statistics, and reading times. Download as PDF, DOCX, or TXT with full export customization.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Tech Stack -->
+<section class="page-section" aria-labelledby="techstack-heading">
+  <h2 id="techstack-heading" class="section-title">Technology Stack</h2>
+  <div class="tech-stack-grid">
+    <div class="tech-card">
+      <div class="tech-card-icon tech-icon--python" aria-hidden="true">🐍</div>
+      <h3 class="tech-card-name">Python 3</h3>
+      <p class="tech-card-desc">Core programming language for backend logic, text processing, and summarization algorithms.</p>
+    </div>
+    <div class="tech-card">
+      <div class="tech-card-icon tech-icon--flask" aria-hidden="true">⚗️</div>
+      <h3 class="tech-card-name">Flask</h3>
+      <p class="tech-card-desc">Lightweight WSGI web framework for the HTTP API and Jinja2 template rendering.</p>
+    </div>
+    <div class="tech-card">
+      <div class="tech-card-icon tech-icon--hf" aria-hidden="true">📐</div>
+      <h3 class="tech-card-name">TF-IDF + MMR</h3>
+      <p class="tech-card-desc">Hand-coded TF-IDF sentence scoring with centrality, content-type bonuses, and Maximal Marginal Relevance (MMR) for diversity-guaranteed extractive summarization.</p>
+    </div>
+    <div class="tech-card">
+      <div class="tech-card-icon tech-icon--pytorch" aria-hidden="true">🔤</div>
+      <h3 class="tech-card-name">Transformers (Tokenizer)</h3>
+      <p class="tech-card-desc">The Hugging Face Transformers library provides the BART tokenizer, used solely for accurate token counting during chunk splitting &mdash; no model inference is performed.</p>
+    </div>
+    <div class="tech-card">
+      <div class="tech-card-icon tech-icon--pdf" aria-hidden="true">📄</div>
+      <h3 class="tech-card-name">PyMuPDF</h3>
+      <p class="tech-card-desc">High-performance PDF text and image extraction with positional bounding-box analysis for header/footer detection.</p>
+    </div>
+    <div class="tech-card">
+      <div class="tech-card-icon tech-icon--docx" aria-hidden="true">📝</div>
+      <h3 class="tech-card-name">python-docx</h3>
+      <p class="tech-card-desc">Reading and writing Microsoft Word DOCX documents, including table cell extraction.</p>
+    </div>
+    <div class="tech-card">
+      <div class="tech-card-icon tech-icon--reportlab" aria-hidden="true">📊</div>
+      <h3 class="tech-card-name">ReportLab</h3>
+      <p class="tech-card-desc">Professional PDF generation with support for images, tables, headers, footers, and custom styling.</p>
+    </div>
+    <div class="tech-card">
+      <div class="tech-card-icon tech-icon--html" aria-hidden="true">🌐</div>
+      <h3 class="tech-card-name">HTML5 / CSS3 / JavaScript</h3>
+      <p class="tech-card-desc">Standards-compliant frontend with WCAG 2.1 accessibility, dark mode, and responsive design.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Key Features -->
+<section class="page-section" aria-labelledby="features-heading">
+  <h2 id="features-heading" class="section-title">Key System Features</h2>
+  <div class="feature-list-grid">
+    <ul class="feature-list">
+      <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Unlimited document length via chunk-and-score pipeline</li>
+      <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Automatic removal of repeated headers, footers &amp; watermarks</li>
+      <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> 4 summary lengths: Short, Medium, Long, Custom %</li>
+      <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Paragraph and bullet-point output formats</li>
+      <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Key highlights and TF-IDF topic keywords extraction</li>
+      <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Figure and diagram extraction from PDFs</li>
+    </ul>
+    <ul class="feature-list">
+      <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Code listing preservation (verbatim, not AI-paraphrased)</li>
+      <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Real-time progress tracking with cancel support</li>
+      <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Download as PDF, DOCX, or TXT with custom formatting</li>
+      <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Reading time estimation and word count statistics</li>
+      <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Session history (last 5 results, reloadable)</li>
+      <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Dark mode, high contrast, font size adjuster (WCAG 2.1)</li>
+    </ul>
+  </div>
+</section>
+
+{% endblock %}

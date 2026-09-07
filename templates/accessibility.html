@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Accessibility — TechPDF Summarizer – Diagram &amp; Code Preservation{% endblock %}
+{% block og_title %}Accessibility Statement{% endblock %}
+
+{% block content %}
+
+<!-- Accessibility Hero -->
+<section class="page-hero" aria-labelledby="a11y-title">
+  <div class="page-hero-badge">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="3" r="1"/><path d="M7 8l5 1 5-1M12 9v6M9 21l3-6 3 6"/></svg>
+    Accessibility
+  </div>
+  <h1 id="a11y-title">Accessibility Statement</h1>
+  <p class="page-hero-subtitle">This application is designed to be usable by everyone. Two built-in accessibility controls are available on every page to improve readability and visual comfort.</p>
+</section>
+
+<!-- Accessibility Features — two cards only -->
+<section class="page-section" aria-labelledby="features-heading">
+  <h2 id="features-heading" class="section-title">Accessibility Features</h2>
+
+  <div class="a11y-features-grid a11y-features-grid--two">
+
+    <div class="a11y-feature-card a11y-feature-card--large">
+      <div class="a11y-feature-icon" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><text x="2" y="18" font-size="17" font-weight="bold" fill="currentColor" stroke="none">A</text></svg>
+      </div>
+      <h3>Optimized Typography &amp; Readability</h3>
+      <p>The application uses a unified, highly legible sans-serif typeface (<strong>Inter</strong>) engineered for reading clarity on screens. Generous line heights, strong contrast ratios, and bold headings ensure that all generated summaries and documents are effortless to scan and read comfortably.</p>
+      <p class="a11y-feature-tip">Responsive font scaling ensures high legibility across mobile devices, tablets, and desktop displays.</p>
+    </div>
+
+    <div class="a11y-feature-card a11y-feature-card--large">
+      <div class="a11y-feature-icon" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 010 20z" fill="currentColor" stroke="none"/></svg>
+      </div>
+      <h3>Theme &amp; Dark Mode</h3>
+      <p>Click the <strong>theme toggle icon</strong> in the navigation bar to switch between Light and Dark modes at any time. High-contrast colors reduce eye fatigue during long reading sessions, and your preference is remembered across sessions.</p>
+      <p class="a11y-feature-tip">You can also use the keyboard shortcut <strong>Alt+T</strong> to toggle the theme instantly.</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- Accessibility Contact -->
+<section class="page-section" aria-labelledby="report-heading">
+  <div class="page-card page-card--info">
+    <h2 id="report-heading">Found an Issue?</h2>
+    <p>If you encounter anything that prevents you from using a feature, that feedback is genuinely welcome. Accessibility is a core requirement of this project, not an afterthought.</p>
+    <p>This application is a final-year Computer Science project at <strong>Gombe State University</strong>, Department of Computer Science.</p>
+  </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,10 @@
+flask>=3.0
+werkzeug>=3.0
+transformers>=4.44
+torch>=2.4
+sentencepiece>=0.2
+PyMuPDF>=1.24
+python-docx>=1.1
+reportlab>=4.0
+rouge-score>=0.1
+gunicorn>=22.0

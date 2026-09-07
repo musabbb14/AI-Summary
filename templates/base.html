@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Document Summarization Using TF-IDF and MMR with Diagram and Code Preservation for Technical PDF Documents — upload PDF, DOCX, or TXT files and receive intelligent, structured summaries. Final year project, Gombe State University." />
+  <meta name="robots" content="noindex" />
+  <meta property="og:title" content="{% block og_title %}TechPDF Summarizer – Diagram &amp; Code Preservation{% endblock %}" />
+  <meta property="og:description" content="AI-powered document summarization for PDF, DOCX, and TXT files." />
+  <title>{% block title %}TechPDF Summarizer – Diagram &amp; Code Preservation{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body id="top">
+
+<!-- Skip navigation -->
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<!-- ===== HEADER ===== -->
+<header class="site-header" role="banner" id="site-header">
+  <div class="header-inner">
+    <a href="{{ url_for('index') }}" class="brand" aria-label="AI Document Summarizer — Home">
+      <svg class="brand-icon" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <line x1="16" y1="13" x2="8" y2="13"/>
+        <line x1="16" y1="17" x2="8" y2="17"/>
+        <polyline points="10 9 9 9 8 9"/>
+      </svg>
+      <div class="brand-text">
+        <span class="brand-name">DocSummarize</span>
+        <span class="brand-tagline">AI Document Summarizer</span>
+      </div>
+    </a>
+
+    <nav class="site-nav" role="navigation" aria-label="Main navigation">
+      <a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint == 'index' %}nav-link--active{% endif %}" {% if request.endpoint == 'index' %}aria-current="page"{% endif %}>
+        Summarizer
+      </a>
+      <a href="{{ url_for('about') }}" class="nav-link {% if request.endpoint == 'about' %}nav-link--active{% endif %}" {% if request.endpoint == 'about' %}aria-current="page"{% endif %}>
+        About
+      </a>
+      <a href="{{ url_for('help_page') }}" class="nav-link {% if request.endpoint == 'help_page' %}nav-link--active{% endif %}" {% if request.endpoint == 'help_page' %}aria-current="page"{% endif %}>
+        Help
+      </a>
+      <a href="{{ url_for('evaluation') }}" class="nav-link {% if request.endpoint == 'evaluation' %}nav-link--active{% endif %}" {% if request.endpoint == 'evaluation' %}aria-current="page"{% endif %}>
+        Performance
+      </a>
+    </nav>
+
+    <div class="header-controls">
+      <!-- Dark mode toggle -->
+      <button type="button" class="icon-btn" id="themeToggle" aria-label="Toggle dark mode" aria-pressed="false" title="Toggle theme">
+        <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:none"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+      </button>
+
+      <!-- Mobile hamburger -->
+      <button type="button" class="hamburger-btn" id="hamburgerBtn" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobileMenu">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Mobile menu -->
+<div class="mobile-menu" id="mobileMenu" hidden role="dialog" aria-label="Navigation menu" aria-modal="true">
+  <nav class="mobile-nav" aria-label="Mobile navigation">
+    <a href="{{ url_for('index') }}" class="mobile-nav-link {% if request.endpoint == 'index' %}mobile-nav-link--active{% endif %}">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Summarizer
+    </a>
+    <a href="{{ url_for('about') }}" class="mobile-nav-link {% if request.endpoint == 'about' %}mobile-nav-link--active{% endif %}">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      About
+    </a>
+    <a href="{{ url_for('help_page') }}" class="mobile-nav-link {% if request.endpoint == 'help_page' %}mobile-nav-link--active{% endif %}">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Help
+    </a>
+    <a href="{{ url_for('accessibility') }}" class="mobile-nav-link {% if request.endpoint == 'accessibility' %}mobile-nav-link--active{% endif %}">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+      Accessibility
+    </a>
+    <a href="{{ url_for('evaluation') }}" class="mobile-nav-link {% if request.endpoint == 'evaluation' %}mobile-nav-link--active{% endif %}">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+      Performance
+    </a>
+  </nav>
+</div>
+
+<!-- ===== MAIN CONTENT ===== -->
+<main id="main-content" class="main-content" tabindex="-1">
+  <div class="container">
+    {% block content %}{% endblock %}
+  </div>
+</main>
+
+<!-- ===== TOAST CONTAINER ===== -->
+<div class="toast-container" id="toastContainer" role="status" aria-live="polite" aria-atomic="true"></div>
+
+<!-- ===== FOOTER ===== -->
+<footer class="site-footer" role="contentinfo">
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <!-- Brand & Mission -->
+      <div class="footer-col footer-col--brand">
+        <div class="footer-brand">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="footer-brand-icon">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+          <span class="footer-brand-name">DocSummarize</span>
+        </div>
+        <p class="footer-description">Fast, private document summarization with automatic diagram, table, and code preservation.</p>
+        <div class="footer-badges">
+          <span class="footer-badge">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Private &amp; Local
+          </span>
+          <span class="footer-badge">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Zero Hallucinations
+          </span>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <div class="footer-col">
+        <h3 class="footer-heading">Navigation</h3>
+        <nav class="footer-links" aria-label="Footer navigation">
+          <a href="{{ url_for('index') }}" class="footer-link">Summarizer</a>
+          <a href="{{ url_for('about') }}" class="footer-link">About the Project</a>
+          <a href="{{ url_for('help_page') }}" class="footer-link">Help &amp; FAQ</a>
+          <a href="{{ url_for('evaluation') }}" class="footer-link">Performance &amp; Evaluation</a>
+          <a href="{{ url_for('accessibility') }}" class="footer-link">Accessibility</a>
+        </nav>
+      </div>
+
+      <!-- System & Capabilities -->
+      <div class="footer-col">
+        <h3 class="footer-heading">System</h3>
+        <div class="footer-status-pill" title="Extractive NLP engine is operational">
+          <span class="footer-status-dot" aria-hidden="true"></span>
+          <span>All Systems Operational</span>
+        </div>
+        <ul class="footer-features-list">
+          <li>Extractive TF-IDF + MMR</li>
+          <li>Diagram &amp; Code Retention</li>
+          <li>Structured &amp; Scannable Notes</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p class="footer-copyright">&copy; 2026 DocSummarize &middot; Gombe State University</p>
+      <div class="footer-bottom-right">
+        <a href="{{ url_for('accessibility') }}" class="footer-a11y-link">Accessibility Statement</a>
+        <span class="footer-dot-sep" aria-hidden="true">&middot;</span>
+        <a href="#top" class="footer-back-to-top" aria-label="Scroll to top of page">Back to top &uarr;</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+<!-- ===== GLOBAL SCRIPTS ===== -->
+<script>
+(function() {
+  'use strict';
+
+  // --- Theme (dark/light) ---
+  var themeToggle   = document.getElementById('themeToggle');
+  var iconSun       = themeToggle.querySelector('.icon-sun');
+  var iconMoon      = themeToggle.querySelector('.icon-moon');
+  var html          = document.documentElement;
+
+  function applyTheme(theme) {
+    html.setAttribute('data-theme', theme);
+    var isDark = theme === 'dark';
+    themeToggle.setAttribute('aria-pressed', String(isDark));
+    iconSun.style.display  = isDark ? 'none'  : '';
+    iconMoon.style.display = isDark ? ''      : 'none';
+  }
+
+  var savedTheme = localStorage.getItem('theme') ||
+    (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  applyTheme(savedTheme);
+
+  themeToggle.addEventListener('click', function() {
+    var next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+    localStorage.setItem('theme', next);
+  });
+
+  // Alt+T keyboard shortcut for theme
+  document.addEventListener('keydown', function(e) {
+    if (e.altKey && e.key === 't') { e.preventDefault(); themeToggle.click(); }
+    if (e.altKey && e.key === 'h') { e.preventDefault(); window.location.href = '/help'; }
+    if (e.altKey && e.key === 'a') { e.preventDefault(); window.location.href = '/about'; }
+  });
+
+  // --- High contrast (if present) ---
+  var contrastToggle = document.getElementById('contrastToggle');
+  if (contrastToggle) {
+    var savedContrast = localStorage.getItem('contrast') || 'normal';
+    if (savedContrast === 'high') {
+      html.setAttribute('data-contrast', 'high');
+      contrastToggle.setAttribute('aria-pressed', 'true');
+    }
+    contrastToggle.addEventListener('click', function() {
+      var isHigh = html.getAttribute('data-contrast') === 'high';
+      var next   = isHigh ? 'normal' : 'high';
+      html.setAttribute('data-contrast', next);
+      contrastToggle.setAttribute('aria-pressed', String(!isHigh));
+      localStorage.setItem('contrast', next);
+    });
+  }
+
+  // --- Hamburger / mobile menu ---
+  var hamburgerBtn = document.getElementById('hamburgerBtn');
+  var mobileMenu   = document.getElementById('mobileMenu');
+
+  function openMenu() {
+    mobileMenu.hidden = false;
+    hamburgerBtn.setAttribute('aria-expanded', 'true');
+    hamburgerBtn.classList.add('hamburger-btn--open');
+    document.body.classList.add('mobile-nav-open');
+    // Focus first link
+    var firstLink = mobileMenu.querySelector('a');
+    if (firstLink) firstLink.focus();
+  }
+  function closeMenu() {
+    mobileMenu.hidden = true;
+    hamburgerBtn.setAttribute('aria-expanded', 'false');
+    hamburgerBtn.classList.remove('hamburger-btn--open');
+    document.body.classList.remove('mobile-nav-open');
+  }
+  hamburgerBtn.addEventListener('click', function() {
+    mobileMenu.hidden ? openMenu() : closeMenu();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && !mobileMenu.hidden) closeMenu();
+  });
+
+  // Glassmorphism header on scroll
+  var siteHeader = document.getElementById('site-header');
+  window.addEventListener('scroll', function() {
+    siteHeader.classList.toggle('header--scrolled', window.scrollY > 8);
+  }, { passive: true });
+
+  // --- Toast notification system ---
+  window.showToast = function(message, type) {
+    type = type || 'info';
+    var container = document.getElementById('toastContainer');
+    var toast = document.createElement('div');
+    toast.className = 'toast toast--' + type;
+    toast.setAttribute('role', 'alert');
+    toast.textContent = message;
+    container.appendChild(toast);
+    requestAnimationFrame(function() { toast.classList.add('toast--visible'); });
+    setTimeout(function() {
+      toast.classList.remove('toast--visible');
+      setTimeout(function() { toast.remove(); }, 400);
+    }, 3500);
+  };
+
+})();
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

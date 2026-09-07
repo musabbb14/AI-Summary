@@ -1,0 +1,161 @@
+"document","reference_summary"
+"Computers are a balanced mix of software and hardware. Hardware is just a piece of mechanical device and its functions are being controlled by a compatible software. Hardware understands instructions in the form of electronic charge, which is the counterpart of binary language in software programming. Binary language has only two alphabets, 0 and 1. To instruct, the hardware codes must be written in binary format, which is simply a series of 1s and 0s. It would be a difficult and cumbersome task for computer programmers to write such codes, which is why we have compilers to write such codes.
+
+Language Processing System
+We have learnt that any computer system is made of hardware and software. The hardware understands a language, which humans cannot understand. So we write programs in high-level language, which is easier for us to understand and remember. These programs are then fed into a series of tools and OS components to get the desired code that can be used by the machine. This is known as Language Processing System.
+
+The high-level language is converted into binary language in various phases. A compiler is a program that converts high-level language to assembly language. Similarly, an assembler is a program that converts the assembly language to machine-level language. Let us first understand how a program, using C compiler, is executed on a host machine. User writes a program in C language (high-level language). The C compiler compiles the program and translates it to assembly program (low-level language). An assembler then translates the assembly program into machine code (object). A linker tool is used to link all the parts of the program together for execution (executable machine code). A loader loads all of them into memory and then the program is executed. Before diving straight into the concepts of compilers, we should understand a few other tools that work closely with compilers.
+
+Preprocessor
+A preprocessor, generally considered as a part of compiler, is a tool that produces input for compilers. It deals with macro-processing, augmentation, file inclusion, language extension, etc.
+
+Interpreter
+An interpreter, like a compiler, translates high-level language into low-level machine language. The difference lies in the way they read the source code or input. A compiler reads the whole source code at once, creates tokens, checks semantics, generates intermediate code, executes the whole program and may involve many passes. In contrast, an interpreter reads a statement from the input, converts it to an intermediate code, executes it, then takes the next statement in sequence. If an error occurs, an interpreter stops execution and reports it; whereas a compiler reads the whole program even if it encounters several errors.
+
+Assembler
+An assembler translates assembly language programs into machine code. The output of an assembler is called an object file, which contains a combination of machine instructions as well as the data required to place these instructions in memory.
+
+Linker
+Linker is a computer program that links and merges various object files together in order to make an executable file. All these files might have been compiled by separate assemblers. The major task of a linker is to search and locate referenced module/routines in a program and to determine the memory location where these codes will be loaded, making the program instruction to have absolute references.
+
+Loader
+Loader is a part of operating system and is responsible for loading executable files into memory and execute them. It calculates the size of a program (instructions and data) and creates memory space for it. It initializes various registers to initiate execution.
+
+Cross-compiler
+A compiler that runs on platform (A) and is capable of generating executable code for platform (B) is called a cross-compiler.
+
+Source-to-source Compiler
+A compiler that takes the source code of one programming language and translates it into the source code of another programming language is called a source-to-source compiler.","A compiler translates high-level language code into low-level machine code, working alongside other tools such as preprocessors, interpreters, assemblers, linkers, and loaders in what is known as a language processing system. Unlike an interpreter, which executes code line by line, a compiler processes the entire program at once before execution."
+"What is Distributed Computing System?
+A distributed computing system is basically a collection of processors interconnected by a communication network in which each processor has its own local memory and other peripherals, and the communication between any two processors of the system takes place by message passing over the communication network. For a particular processor, its own resources are local, whereas the other processors and their resources are remote. Together, a processor and its resources are usually referred to as a node or site or machine of the distributed computing system.
+
+Types of Multiprocessor Computer Architectures
+Computer architectures consisting of interconnected, multiple processors are basically of two types: Tightly Coupled Systems and Loosely Coupled Systems.
+
+Tightly Coupled Systems
+In these systems, there is a single system wide primary memory that is shared by all the processors. If any processor writes, for example, the value 100 to the memory location x, any other processor subsequently reading from location x will get the value 100. Therefore, in these systems, any communication between the processors usually takes place through the shared memory.
+
+Loosely Coupled Systems
+In these systems, the processors do not share memory, and each processor has its own local memory. If a processor writes the value 100 to the memory location x, this write operation will only change the contents of its local memory and will not affect the contents of other memories. In these systems, all physical communication between the processors is done by passing messages across the network that interconnects the processors.
+
+Differences between Tightly Coupled and Loosely Coupled Systems
+Tightly coupled systems are also called parallel processing systems; the number of processors that can be usefully deployed is usually small and limited by the bandwidth of the shared memory; the processors are usually close to one another. Loosely coupled systems are also called distributed computing systems; they are more freely expandable and can have an almost unlimited number of processors; the processors can be located far from one another to cover a wider geographical area.
+
+Evolution of Distributed Computing Systems
+Over the years, computer systems have been undergoing a revolution. From 1945, when the modern computer era began, until about 1985, computers were large and expensive. As a result, most organizations had only a handful of computers, and for lack of a way to connect them, these operated independently from one another. Starting around the mid-1980s, however, two advances in technology began to change that situation: development of microcomputers and computer networks.
+
+Development of Microcomputers
+The first advancement was the development of powerful microprocessors. Initially, these were 8-bit machines, but soon 16-bit, 32-bit, and now 64-bit CPUs became common. Many of these had the computing power of a mainframe computer, but for a fraction of the price. From a machine that cost 10 million dollars and executed 1 instruction per second, we have come to machines that cost 1000 dollars and are able to execute 1 billion instructions per second.
+
+Development of Computer Networks
+The second development was the invention of high-speed computer networks. Local-area networks (LANs) allow hundreds of machines within a building to be connected in such a way that small amounts of information can be transferred between machines in a few microseconds or so. Today, Metropolitan Area Networks (MANs) and Wide Area Networks (WANs) are very popular.
+
+Distributed Computing System Models
+Various models are used for building distributed computing systems. These models can be broadly classified into five categories: Minicomputer, Workstation, Workstation-server, Processor Pool, and Hybrid Model.
+
+Minicomputer Model
+The minicomputer model is a simple extension of the centralized time sharing system. This model consists of a few minicomputers interconnected by a communication network. Each minicomputer usually has multiple users simultaneously logged on to it. Each user is logged on to one specific minicomputer, with remote access to other minicomputers. The minicomputer model may be used when resource sharing with remote users is desired.
+
+Workstation Model
+The workstation model consists of several workstations interconnected by a communication network. It has been often found that in such an environment, at any one time, a significant proportion of the workstations are idle, resulting in the waste of large amounts of CPU time. The idea of the workstation model is to interconnect all these workstations by a high speed LAN so that idle workstations may be used to process jobs of users who are logged onto other workstations and do not have sufficient processing power at their own workstations.
+
+Workstation Server Model
+This is a network of personal workstations having its own disk and local file system. This model consists of a few minicomputers and several workstations interconnected by a communication network. Normal computation activities required by the user's processes are performed at the user's home workstation, but requests for services provided by special servers are sent to a server providing that type of service. Advantages of this model compared to the workstation model include being cheaper to use, easier backup and hardware maintenance, flexible file access, and no need for process migration facility.
+
+Processor Pool Model
+The processor-pool model is based on the observation that most of the time a user does not need any computing power but once in a while may need a very large amount of computing power for a short time. Unlike the workstation-server model in which a processor is allocated to each user, in the processor-pool model the processors are pooled together to be shared by the users as needed. In the processor-pool model, there is no concept of a home machine; a user does not log onto a particular machine but to the system as a whole. The workstation-server model is the most widely used model for building distributed computing systems, while the processor-pool model is more attractive for environments needing massive computation.
+
+Hybrid Model
+To combine the advantages of both the workstation-server and processor-pool models, a hybrid model may be used. The hybrid model is based on the workstation-server model but with the addition of a pool of processors that can be allocated dynamically for computations that are too large for workstations. The hybrid model gives guaranteed response to interactive jobs by allowing them to be processed on local workstations, but it is more expensive to implement than the other models.","A distributed computing system consists of interconnected processors that communicate by passing messages over a network, and can be tightly coupled (sharing memory) or loosely coupled (each with its own local memory). Distributed systems evolved from advances in microprocessors and computer networks, and are commonly built using one of five models: minicomputer, workstation, workstation-server, processor pool, or hybrid, with the workstation-server model being the most widely used."
+"DISTRIBUTED OPERATING SYSTEM
+Distributed system here does not mean distributed database system or some distributed application system, such as a banking system. We mean Distributed Operating System (DOS). Another name for a DOS is Decentralized Operating System. DOS is an operating system which manages a set of independent computer systems, and makes these computer systems appear as a single unit to the user of a system. In DOS, two types of hardware architectures, parallel and distributed, can be used. Parallel architecture is a hardware architecture in which there are multiple processors that are tightly coupled and have a shared memory. Distributed architecture is a hardware architecture in which there are multiple loosely coupled computer systems, each system with its own memory.
+
+Examples of Distributed Operating System
+Solaris: Developed by Sun Microsystems for their multiprocessor workstations. Mach: This is a UNIX-compatible operating system designed for multitasking and multithreading capabilities. Locus: This allows users to access local and remote files remotely and transparently, regardless of their locations. Google Fuchsia: This works across several devices, each having distributed processing capabilities. Inferno OS: This is a distributed operating system developed at Bell Labs, allowing applications to run seamlessly across different devices, networks, and hardware architectures.
+
+Key Concept in Distributed Operating System
+The key concept in distributed operating system is TRANSPARENCY. What determines a distributed operating system are the software and not the hardware. Network OS (NOS) is used to manage networked computer systems, and create, maintain and transfer files in that network. Distributed OS is similar to Networked OS but in addition the platform on which it is running should have high configuration such as more memory capacity and high speed processor. The main difference between DOS and NOS is the transparency issue. If a user can tell which computer he or she is using, then he or she is not using a distributed system. The users of a true distributed operating system should not know or care on which machine their programs are running, where their files are stored, and so on.
+
+Key Features of Distributed Operating System
+A distributed operating system must be designed to provide all the advantages of a distributed system to its users, allowing them to view a distributed system as a virtual centralized system that is flexible, efficient, reliable, secure and easy to use. Designers must consider the following features: Transparency, Enhanced Security, Reliability, Flexibility, Performance, and Scalability.
+
+Transparency
+A distributed system that is able to present itself to users and applications as if it were only a single computer system is said to be transparent. There are eight types of transparencies: Access Transparency hides differences in data representation and resource access; Location Transparency hides where a resource is physically located; Migration Transparency hides that a resource may move from one location to another; Relocation Transparency deals with resources being relocated while being accessed; Replication Transparency hides that multiple copies of a resource could exist simultaneously; Concurrency Transparency hides that a resource may be shared by several competing users; Failure Transparency hides failure and recovery of resources, and is the most difficult task of a distributed system; Persistence Transparency hides whether a resource is in memory or on disk.
+
+Enhanced Security
+One of the most critical features of DOS is to ensure secure communication and data handling across many systems. This includes authentication and authorization, data encryption and integrity, and access control mechanisms.
+
+Reliability
+Distributed systems are generally expected to be more reliable than centralized systems due to the existence of multiple instances of resources, but the distributed operating system must be designed properly to take advantage of this. For higher reliability, fault-handling mechanisms must avoid faults, tolerate faults, and detect and recover from faults. Fault Avoidance deals with designing components to minimize the occurrence of faults. Fault Tolerance is the ability of a system to continue functioning in the event of partial failure, using techniques such as redundancy (replicating critical hardware and software components) and distributed control (avoiding single points of failure by using multiple independent servers). Fault Detection and Recovery uses mechanisms such as atomic transactions (where either all operations of a transaction succeed or none do), stateless servers (which make crash recovery easier since no client state is maintained), and acknowledgments with timeout-based retransmission of messages to handle lost or duplicate messages.
+
+Flexibility
+Flexibility is one of the most important features for open distributed systems, requiring ease of modification (incorporating changes with minimum interruption to users) and ease of enhancement (adding new services over time).
+
+Performance
+If a distributed system is to be used, its performance must be at least as good as a centralized system. Design principles for better performance include batching (transferring data in large chunks rather than individually), caching (storing data at client sites to save computing time and bandwidth), minimizing copying of data, and minimizing network traffic.
+
+Scalability
+Scalability refers to the capability of a system to adapt to increased service load. A distributed operating system should be designed to easily cope with the growth of nodes and users without serious disruption of service or significant loss of performance.","A Distributed Operating System (DOS) manages a set of independent computer systems and makes them appear as a single unit to the user, with transparency as its key defining concept, meaning users should not know or care which machine their programs run on. Designers of a DOS must address six key features: transparency (with eight subtypes), enhanced security, reliability (through fault avoidance, tolerance, and recovery), flexibility, performance, and scalability."
+"REMOTE PROCEDURE CALLS
+A remote procedure call (RPC) is an inter-process communication that allows a computer program to cause a procedure to execute on another computer remotely on a shared network without the programmer explicitly coding the details for this remote interaction. It further aims at hiding most of the details of message passing and is ideal for client-server application. RPC allows programs to call procedures located on other computers.
+
+Example
+When a process on computer A calls a procedure on computer B, the calling process on A is suspended and the execution of the called procedure takes place. No message passing is visible to the programmer; it is completely transparent. As calling and called procedures exist on different computers, they execute in different address spaces, so the parameters and result should be identical.
+
+Transparency in RPC
+A major issue in the design of an RPC facility is its transparency property. A transparent RPC mechanism is one in which local procedures and remote procedures are effectively indistinguishable to programmers. This requires two types of transparencies: Syntactic Transparency, meaning a remote procedure call should have exactly the same syntax as a local procedure call, and Semantic Transparency, meaning the semantics of a remote procedure call are identical to those of a local procedure call.
+
+How Remote Procedure Calls Differ from Local Procedure Calls
+Remote Execution: unlike local procedure calls, the called procedure is executed in an address space disjoint from the calling program's address space. Vulnerability to Failure: remote procedure calls are more vulnerable to failure since they involve two different processes and possibly a network and two different computers. Time Consuming: remote procedure calls consume much more time, 100 to 1000 times more, than local procedure calls, mainly due to the involvement of a communication network.
+
+Implementing RPC Mechanism
+Implementation of an RPC mechanism usually involves five elements: the Client, the Client Stub, the RPC Runtime (on server and client), the Server Stub, and the Server. The client, client stub, and one instance of RPC Runtime execute on the client machine, while the server, server stub, and another instance of RPC Runtime execute on the server machine.
+
+The Client is a user process that initiates a remote procedure call by making a normal local call that invokes a corresponding procedure in the client stub. The Client Stub packs a specification of the target procedure and arguments into a message and sends it to the local RPC Runtime, then unpacks the result of procedure execution and passes it to the client. The RPC Runtime handles transmission of messages across the network, and is responsible for retransmissions, acknowledgements, packet routing, and encryption. The Server Stub unpacks the call request message and makes a normal call to invoke the appropriate procedure in the server, then packs the result into a message for the RPC Runtime to send back. The Server executes the appropriate procedure and returns the result to the server stub. The beauty of the whole scheme is the total ignorance on the part of the client that the work was done remotely instead of by the local kernel.
+
+RPC Messages
+Any remote procedure call involves a client process and a server process, possibly on different computers. The two types of messages involved are Call Messages, sent by the client to the server to request execution of a remote procedure, and Reply Messages, sent by the server to the client to return the result.
+
+Communication Protocols in RPCs
+Different systems have different requirements, so several communication protocols have been proposed for RPCs. Google RPC Protocol (gRPC) is a modern, high-performance framework developed by Google that uses HTTP/2 for transport, enabling multiplexing and efficient bidirectional streaming, and supports many programming languages. Simple Object Access Protocol (SOAP) is a language-independent platform that uses XML to exchange structured data, using protocols including HTTP, SMTP, and TCP. Apache Thrift Protocol, developed for Facebook, provides cross-language RPC and serialization using an interface definition language. JSON-RPC and XML-RPC are lightweight protocols using JSON or XML respectively for data encoding, using HTTP as the transport protocol. The Request Reply Acknowledgement (RRA) Protocol requires unique message identifiers associated with request messages to be ordered, so that a reply can be matched with its corresponding request and an acknowledgement with its corresponding reply.
+
+Marshaling Arguments and Results
+Implementation of remote procedure calls involves the transfer of arguments from the client process to the server process and the transfer of results back, which are language-level data structures transferred as message data requiring encoding and decoding. This operation, known as marshaling, involves taking the arguments or result that will form the message data, encoding the message data on the sender's computer by converting program objects into a stream form suitable for transmission, and decoding the message data on the receiver's computer by reconstructing program objects from the received stream.","A Remote Procedure Call (RPC) allows a program to invoke a procedure on another computer as if it were a local call, hiding the underlying message-passing details from the programmer. An RPC mechanism is implemented through five elements, client, client stub, RPC runtime, server stub, and server, which together pack, transmit, and unpack call and reply messages, a process known as marshaling, using protocols such as gRPC, SOAP, or JSON-RPC."
+"Introduction
+Modern economies increasingly depend on intangible assets. A software company may have few physical assets but possess extremely valuable software source code, algorithms, databases, brand names, logos, designs, business methods, and technical inventions. The law provides mechanisms for protecting many of these creations and assets through intellectual property rights.
+
+What is Intellectual Property (IP)?
+Intellectual property refers broadly to creations of the human mind, including inventions, literary and artistic works, designs, and commercial signs such as names and images. WIPO identifies copyright, patents, trademarks and industrial designs among the major forms of IP protection. Intellectual property right simply refers to the legal protection given to certain creations and inventions of the human mind, examples being copyright, patent, trademarks and industrial design rights.
+
+Why is IP important in IT
+Information technology depends heavily on intellectual creativity. Without IP protection, competitors could potentially copy valuable creations and commercially exploit them. IP law therefore attempts to balance two interests: the creator's interest in receiving recognition and economic benefit, and the public interest in society ultimately benefiting from innovation, creativity and dissemination of knowledge.
+
+Copyright
+Copyright is an IPR that protects original literary and artistic works and related subject matter. In the IT environment, copyright is particularly important because computer programs and databases can be protected by copyright. Examples of IP that can be protected using copyright include computer programs, mobile applications, website content, digital books, videos, photographs, and music.
+
+Copyright and Software
+Software is not simply a technical product; it can also be intellectual property. A software application normally contains several potentially protected components: source code may be protected by copyright, a logo or brand name by trademark, a novel technical invention potentially by patent, a proprietary algorithm by copyright or trade secret depending on circumstances, user interface design possibly by copyright or design protection, and documentation by copyright.
+
+Rights of a Copyright Owner
+Copyright generally gives the rights holder control over certain uses of the protected work, including rights concerning reproduction, distribution, adaptation, communication to the public, public performance, and commercial exploitation.
+
+Copyright Ownership
+Ownership is not always the same as authorship. For example, a software engineer employed by a company and developing software as part of assigned duties raises the question of who owns the resulting intellectual property. The answer depends on applicable law, the employment relationship, and contractual terms, which is why IT professionals should carefully read employment contracts, software development agreements, IP assignment clauses, licensing agreements, and consultancy agreements.
+
+Copyright Infringement
+Copyright infringement is the unauthorized use of a work protected by copyright in a way that violates the exclusive rights of the copyright owner, such as reproducing, distributing, or publicly displaying it without permission. Examples include uploading a movie to a file sharing website without permission, using someone else's photo in a commercial website without a license, and downloading and distributing copyrighted software illegally. Consequences may include an order to stop using the work, payment of damages and lost profit, and in worse cases, criminal penalty for willful infringement on a commercial scale.
+
+Patent
+A patent is an exclusive right granted for an invention, in return for which technical information about the invention is generally disclosed. Patents are primarily concerned with inventions rather than literary or artistic expression. Patentability requirements vary by jurisdiction but may include novelty, inventive step or non-obviousness, industrial applicability or usefulness, and eligible subject matter. Copyright protects expression while patents protect qualifying inventions.
+
+Trademark
+A trademark is a sign capable of distinguishing the goods or services of one enterprise from those of another, such as company names, product names, logos, symbols, and certain slogans. Trademark protection helps prevent confusingly similar branding from misleading consumers.
+
+Trade Secret
+A trade secret is confidential business information that derives value from being secret and is protected through appropriate confidentiality measures, such as proprietary source code, confidential algorithms, customer databases, security procedures, business strategies, and internal system architecture. Trade-secret protection depends heavily on maintaining confidentiality, so organizations should use access controls, encryption, authentication, and security monitoring.
+
+Software Licensing
+Owning software and having a license to use software are not necessarily the same thing; a software license is permission to use software subject to specified conditions. Common models include Proprietary Software, where the copyright owner retains control and grants users limited rights; Subscription Software, where users pay periodically for access; and Open-Source Software, where the source code is made available under a particular license. An important misconception is that open source means no copyright; this is incorrect, as open-source software remains subject to copyright, with the copyright holder using a license such as MIT, Apache, GNU GPL, or BSD to grant users specified freedoms, and different licenses imposing different obligations.
+
+Common Sources of IP Infringement in IT
+These include software piracy, unauthorized copying, plagiarism, unauthorized distribution, trademark misuse, unauthorized use of proprietary source code, circumvention of licensing restrictions, and misappropriation of confidential information.","Intellectual property (IP) refers to legal protections given to creations of the human mind, with copyright, patents, trademarks, and trade secrets being the main forms relevant to IT. Copyright protects expression such as source code and documentation, patents protect qualifying technical inventions, trademarks protect distinguishing brand elements, and trade secrets protect confidential business information such as proprietary algorithms, with software licensing (proprietary, subscription, or open-source) governing how others may legally use protected software."

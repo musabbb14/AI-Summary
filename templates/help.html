@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+{% block title %}Help &amp; FAQ — TechPDF Summarizer – Diagram &amp; Code Preservation{% endblock %}
+{% block og_title %}Help and Frequently Asked Questions{% endblock %}
+
+{% block content %}
+
+<!-- Help Hero -->
+<section class="page-hero" aria-labelledby="help-title">
+  <div class="page-hero-badge">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" stroke="white" stroke-width="2" fill="none"/><line x1="12" y1="17" x2="12.01" y2="17" stroke="white" stroke-width="2"/></svg>
+    Help &amp; Documentation
+  </div>
+  <h1 id="help-title">How to Use the Summarizer</h1>
+  <p class="page-hero-subtitle">Everything you need to know about uploading documents, choosing settings, and getting the best results from the AI.</p>
+</section>
+
+<!-- Quick Start Guide -->
+<section class="page-section" aria-labelledby="quickstart-heading">
+  <h2 id="quickstart-heading" class="section-title">Quick Start Guide</h2>
+  <div class="steps-grid steps-grid--horizontal">
+    <div class="step-card">
+      <div class="step-number" aria-hidden="true">1</div>
+      <div class="step-icon" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </div>
+      <h3>Upload Your File</h3>
+      <p>Drag and drop a PDF, DOCX, or TXT file onto the upload area, or click to browse your files.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-number" aria-hidden="true">2</div>
+      <div class="step-icon" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="10" x2="7" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="21" y1="18" x2="7" y2="18"/></svg>
+      </div>
+      <h3>Choose Length &amp; Format</h3>
+      <p>Pick Short, Medium, Long, or a Custom percentage. Choose Paragraph or Bullet output format.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-number" aria-hidden="true">3</div>
+      <div class="step-icon" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 100 20 10 10 0 000-20z"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <h3>Click Summarize</h3>
+      <p>Press the "Summarize Document" button and watch the real-time progress bar. You can cancel at any time.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-number" aria-hidden="true">4</div>
+      <div class="step-icon" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </div>
+      <h3>Download or Copy</h3>
+      <p>Read the summary, copy it to clipboard, print it, or download it as a PDF, DOCX, or TXT file.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Supported Formats Table -->
+<section class="page-section" aria-labelledby="formats-heading">
+  <h2 id="formats-heading" class="section-title">Supported File Formats</h2>
+  <div class="table-wrapper" role="region" aria-label="Supported file formats" tabindex="0">
+    <table class="formats-table" aria-labelledby="formats-heading">
+      <thead>
+        <tr>
+          <th scope="col">Format</th>
+          <th scope="col">Extension</th>
+          <th scope="col">Max Size</th>
+          <th scope="col">Figures Extracted</th>
+          <th scope="col">Code Extracted</th>
+          <th scope="col">Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>PDF</strong></td>
+          <td><code>.pdf</code></td>
+          <td>20 MB</td>
+          <td><span class="badge badge--yes">Yes</span></td>
+          <td><span class="badge badge--yes">Yes</span></td>
+          <td>Must be text-based PDF (not a scanned image). Figures and code blocks are extracted separately.</td>
+        </tr>
+        <tr>
+          <td><strong>Word Document</strong></td>
+          <td><code>.docx</code></td>
+          <td>20 MB</td>
+          <td><span class="badge badge--no">No</span></td>
+          <td><span class="badge badge--no">No</span></td>
+          <td>Text content is extracted. Older .doc files are not supported &mdash; save as .docx first.</td>
+        </tr>
+        <tr>
+          <td><strong>Plain Text</strong></td>
+          <td><code>.txt</code></td>
+          <td>20 MB</td>
+          <td><span class="badge badge--no">No</span></td>
+          <td><span class="badge badge--no">No</span></td>
+          <td>UTF-8 encoding recommended. Any plain text file works, including large ones.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- FAQ Accordion -->
+<section class="page-section" aria-labelledby="faq-heading">
+  <h2 id="faq-heading" class="section-title">Frequently Asked Questions</h2>
+  <div class="accordion" id="faqAccordion">
+
+    <div class="accordion-item">
+      <button class="accordion-header" id="faq-q1" aria-expanded="false" aria-controls="faq-a1">
+        <span>What are the summary length options?</span>
+        <svg class="accordion-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="accordion-body" id="faq-a1" role="region" aria-labelledby="faq-q1" hidden>
+        <p>Before clicking Summarize, choose how detailed the output should be:</p>
+        <ul>
+          <li><strong>Short</strong> &mdash; A high-level overview, roughly 25% of the original length. Best for quickly grasping the main idea.</li>
+          <li><strong>Medium</strong> &mdash; A balanced summary at around 40% of the original. Captures the main message and key supporting details.</li>
+          <li><strong>Long</strong> &mdash; A thorough, sectioned summary at about 60% of the original. For long documents, this is automatically broken into labelled sections so nothing major is missed.</li>
+          <li><strong>Custom %</strong> &mdash; Set an exact target length as a percentage of the original word count, anywhere from 10% to 70%.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <button class="accordion-header" id="faq-q2" aria-expanded="false" aria-controls="faq-a2">
+        <span>Does it handle diagrams, figures, and code?</span>
+        <svg class="accordion-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="accordion-body" id="faq-a2" role="region" aria-labelledby="faq-q2" hidden>
+        <p>Yes, for PDF files. The system handles non-text content in two special ways:</p>
+        <ul>
+          <li><strong>Figures &amp; Diagrams</strong> &mdash; Images embedded in the PDF are extracted and shown alongside the summary on screen, and included in every download format. This means textbook diagrams and charts aren't lost.</li>
+          <li><strong>Code Listings</strong> &mdash; Code blocks (detected by monospace font usage in the PDF) are extracted and shown verbatim, in a code-formatted box. They are never run through the AI summarizer &mdash; paraphrasing code could break its logic or meaning.</li>
+        </ul>
+        <p>DOCX and TXT files do not currently support figure or code extraction.</p>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <button class="accordion-header" id="faq-q3" aria-expanded="false" aria-controls="faq-a3">
+        <span>Why is it taking a long time?</span>
+        <svg class="accordion-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="accordion-body" id="faq-a3" role="region" aria-labelledby="faq-q3" hidden>
+        <p>Speed depends on two main factors:</p>
+        <ul>
+          <li><strong>Document length</strong> &mdash; Short documents (a few pages) summarize in seconds. Long documents like a full textbook chapter are read section by section, so the progress bar shows which section is currently being processed.</li>
+          <li><strong>First run</strong> &mdash; The very first summarization after starting the server is slightly slower, because the tokenizer used for chunk splitting needs to initialize. Every summarization after that is faster.</li>
+        </ul>
+        <p>The system uses extractive summarization (TF-IDF + MMR), which runs entirely on CPU and does not require a GPU.</p>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <button class="accordion-header" id="faq-q4" aria-expanded="false" aria-controls="faq-a4">
+        <span>My PDF came back with very little text. Why?</span>
+        <svg class="accordion-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="accordion-body" id="faq-a4" role="region" aria-labelledby="faq-q4" hidden>
+        <p>Some PDFs are <strong>scanned image PDFs</strong> rather than text-based PDFs. They look like text but are actually photographs of pages. This system reads text-based PDFs only. A scanned document would need <strong>OCR (Optical Character Recognition)</strong> software first &mdash; tools like Adobe Acrobat, Google Drive, or open-source alternatives like Tesseract can convert scanned PDFs to text.</p>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <button class="accordion-header" id="faq-q5" aria-expanded="false" aria-controls="faq-a5">
+        <span>Is my document stored on the server?</span>
+        <svg class="accordion-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="accordion-body" id="faq-a5" role="region" aria-labelledby="faq-q5" hidden>
+        <p><strong>No.</strong> Uploaded files are deleted from the server immediately after summarization finishes. Only the resulting summary is kept temporarily in memory (for up to one hour) so you can download it. Nothing is saved to disk permanently. Nothing is ever shared with a third party or sent to any external AI service &mdash; summarization runs entirely locally on the server.</p>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <button class="accordion-header" id="faq-q5b" aria-expanded="false" aria-controls="faq-a5b">
+        <span>What is the maximum file size?</span>
+        <svg class="accordion-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="accordion-body" id="faq-a5b" role="region" aria-labelledby="faq-q5b" hidden>
+        <p>The maximum upload size is <strong>20 MB</strong> per file. This covers the vast majority of academic papers, reports, and technical documents. If your file is larger, try:</p>
+        <ul>
+          <li>Splitting it into chapters or sections and summarizing each separately</li>
+          <li>Removing embedded images or graphics to reduce the file size</li>
+          <li>For DOCX files, saving as PDF with compression can reduce size significantly</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <button class="accordion-header" id="faq-q6" aria-expanded="false" aria-controls="faq-a6">
+        <span>Can I customize how the downloaded file looks?</span>
+        <svg class="accordion-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="accordion-body" id="faq-a6" role="region" aria-labelledby="faq-q6" hidden>
+        <p>Yes! Expand the <strong>Export Formatting</strong> panel before clicking Download. You can adjust:</p>
+        <ul>
+          <li>Page margins (Standard 0.85″, Narrow 0.5″, Wide 1.0″)</li>
+          <li>Font size (10pt, 11.5pt, 12pt, 14pt)</li>
+          <li>Line spacing (Single, 1.4 Standard, 1.6 Relaxed)</li>
+        </ul>
+        <p>A single, clean, and highly readable default typeface is used automatically across all exports.</p>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <button class="accordion-header" id="faq-q7" aria-expanded="false" aria-controls="faq-a7">
+        <span>How do I use the keyboard shortcuts?</span>
+        <svg class="accordion-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="accordion-body" id="faq-a7" role="region" aria-labelledby="faq-q7" hidden>
+        <p>Global keyboard shortcuts available on all pages:</p>
+        <ul>
+          <li><kbd>Alt</kbd> + <kbd>T</kbd> &mdash; Toggle dark/light mode</li>
+          <li><kbd>Alt</kbd> + <kbd>H</kbd> &mdash; Go to Help page</li>
+          <li><kbd>Alt</kbd> + <kbd>A</kbd> &mdash; Go to About page</li>
+          <li><kbd>Tab</kbd> &mdash; Navigate between all interactive elements</li>
+          <li><kbd>Enter</kbd> / <kbd>Space</kbd> &mdash; Activate focused button or open the file upload dialog</li>
+          <li><kbd>Escape</kbd> &mdash; Close the mobile navigation menu</li>
+        </ul>
+        <p>See the <a href="{{ url_for('accessibility') }}">Accessibility page</a> for the full keyboard navigation guide.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Accordion functionality
+  document.querySelectorAll('.accordion-header').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var expanded = this.getAttribute('aria-expanded') === 'true';
+      var bodyId = this.getAttribute('aria-controls');
+      var body = document.getElementById(bodyId);
+
+      // Close all others
+      document.querySelectorAll('.accordion-header').forEach(function(other) {
+        if (other !== btn) {
+          other.setAttribute('aria-expanded', 'false');
+          other.classList.remove('accordion-header--open');
+          var otherId = other.getAttribute('aria-controls');
+          var otherBody = document.getElementById(otherId);
+          if (otherBody) otherBody.hidden = true;
+        }
+      });
+
+      // Toggle this one
+      this.setAttribute('aria-expanded', String(!expanded));
+      this.classList.toggle('accordion-header--open', !expanded);
+      body.hidden = expanded;
+    });
+  });
+</script>
+{% endblock %}
