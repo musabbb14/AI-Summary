@@ -448,6 +448,7 @@ document.addEventListener('DOMContentLoaded', function() {
   function cleanDisplayString(str) {
     if (!str) return '';
     return str
+      .replace(/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f]/g, ' ')
       .replace(/[\u25A0-\u25FF\u2B1B\u2B1C\uE000-\uF8FF]/g, '')
       .replace(/[■□▪▫◾◽◼◻⬛⬜▮▯▬▲►▼◄◊○●◦]/g, '')
       .replace(/[■▪•●]\s*\d{1,4}\b/g, '')
@@ -575,10 +576,11 @@ document.addEventListener('DOMContentLoaded', function() {
           figure.className = 'figure-item';
           const imgEl   = document.createElement('img');
           imgEl.src     = `/image/${activeJobId}/${idx}`;
-          imgEl.alt     = `Extracted figure from page ${img.page}`;
+          const figLabel = (img.figure_number || 'Figure') + ` (page ${img.page})`;
+          imgEl.alt     = `Extracted ${figLabel}`;
           imgEl.loading = 'lazy';
           const caption = document.createElement('figcaption');
-          caption.textContent = `Page ${img.page}`;
+          caption.textContent = figLabel;
           figure.appendChild(imgEl);
           figure.appendChild(caption);
           figuresGrid.appendChild(figure);
@@ -627,9 +629,9 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
 
-    // Set default download format to PDF
-    if (downloadFormat && !downloadFormat.value) {
-      downloadFormat.value = 'pdf';
+    // Reset download format to placeholder "Choose Download"
+    if (downloadFormat) {
+      downloadFormat.value = '';
     }
 
     // Scroll to results
@@ -737,6 +739,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   function escapeHtml(str) {
     const cleaned = str
+      .replace(/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f]/g, ' ')
       .replace(/\uF0B7/g, '•')
       .replace(/[■□▪▫◾◽◼◻⬛⬜▮▯▬•●]\s*\d{1,4}\b/g, '')
       .replace(/[\u25A0-\u25FF\u2B1B\u2B1C\u25AE\u25AF\u25AC]/g, '')
@@ -834,7 +837,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (window.showToast) window.showToast('No summary available to download.', 'info');
         return;
       }
-      const fmt = (downloadFormat && downloadFormat.value) ? downloadFormat.value : 'pdf';
+      const fmt = (downloadFormat && downloadFormat.value) ? downloadFormat.value : '';
+      if (!fmt) {
+        if (downloadFormat) downloadFormat.focus();
+        if (window.showToast) window.showToast('Please choose a download format from the dropdown.', 'info');
+        return;
+      }
       const originalHtml = downloadBtn.innerHTML;
 
       downloadBtn.disabled = true;
@@ -867,6 +875,9 @@ document.addEventListener('DOMContentLoaded', function() {
       if (resultPanel) {
         resultPanel.hidden = true;
         resultPanel.classList.remove('result-visible');
+      }
+      if (downloadFormat) {
+        downloadFormat.value = '';
       }
       // FIX Bug H: Reset the length dropdown to the placeholder state so
       // the user must make a deliberate selection before the next job.

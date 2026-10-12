@@ -6,9 +6,9 @@ sdk: docker
 app_port: 7860
 ---
 
-# DocSummarize &mdash; AI Document Summarization System
+# DocSummarize — AI Document Summarization System
 
-**DocSummarize** is a modern, web-based document summarization platform designed for technical and academic documents (PDF, DOCX, and TXT). It utilizes an advanced **extractive summarization engine** combining TF-IDF centrality, specificity scoring, and **Maximal Marginal Relevance (MMR)** with automatic **diagram, table, and code block preservation**.
+**DocSummarize** is a modern, web-based document summarization platform designed for technical and academic documents (PDF, DOCX, and TXT). It utilizes an advanced **extractive summarization engine** combining TF-IDF centrality, specificity scoring, and **Maximal Marginal Relevance (MMR)** with automatic **diagram and code block preservation**.
 
 Developed for the final year undergraduate project in the Department of Computer Science, Gombe State University.
 
@@ -99,7 +99,6 @@ python app.py
 │   ├── index.html             # Main summarizer interface (dropzone, length selector, results)
 │   ├── about.html             # Project background, methodology, and design architecture
 │   ├── help.html              # User guide & FAQ
-│   ├── evaluation.html        # Performance benchmarks & evaluation metrics
 │   └── accessibility.html     # Accessibility statement (WCAG 2.1 AA compliance)
 │
 ├── static/
@@ -118,8 +117,6 @@ python app.py
 │   ├── file_validator.py      # File size and MIME type security validation
 │   └── download_generator.py  # Structured text & PDF export utilities
 │
-├── evaluation/
-│   └── rouge_evaluation.py   # ROUGE metric benchmarking against reference summaries
 └── tests/                     # Comprehensive automated pytest test suite (17 unit tests)
 ```
 
@@ -137,16 +134,6 @@ To run a specific test module:
 pytest tests/test_summarizer.py
 pytest tests/test_pdf.py
 ```
-
----
-
-## Evaluation & Benchmarks
-
-Evaluate extractive summarization performance using standard ROUGE metrics:
-```bash
-python -m evaluation.rouge_evaluation --data datasets/sample_documents/samples.csv
-```
-This computes ROUGE-1, ROUGE-2, and ROUGE-L precision, recall, and F1-scores, exporting the results to `evaluation/rouge_results.csv`.
 
 ---
 

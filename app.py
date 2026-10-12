@@ -259,7 +259,7 @@ def _run_summarization_job(job_id, filepath, filename, ext, length_preset):
             keywords=keywords,
             code_blocks=code_blocks,
             image_count=len(images),
-            images_meta=[{"page": img["page"]} for img in images],
+            images_meta=[{"page": img["page"], "figure_number": img.get("figure_number")} for img in images],
             original_word_count=original_words,
             summary_word_count=summary_words,
             original_reading_time=original_reading_time,
@@ -327,17 +327,9 @@ def accessibility():
     return render_template("accessibility.html")
 
 
-@app.route("/evaluation")
-def evaluation():
-    return render_template("evaluation.html")
-
-
 @app.route("/api/health")
 def health_check():
-    # FIX Bug M: _model was removed from summarizer.py when the extractive
-    # rewrite landed, causing an ImportError here. We now import only _tokenizer
-    # (which still exists) and use its presence as the readiness signal.
-    from utils.summarizer import _model, _tokenizer
+    from utils.summarizer import _tokenizer
     return jsonify({
         "status": "ok",
         "model_loaded": _tokenizer is not None,

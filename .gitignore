@@ -5,6 +5,9 @@ __pycache__/
 *.so
 .Python
 
+# Scratch helper scripts
+scratch_*.py
+
 # Virtual Environment
 venv/
 env/

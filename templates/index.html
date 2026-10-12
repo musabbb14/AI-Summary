@@ -32,7 +32,7 @@
       <line x1="12" y1="3" x2="12" y2="15"/>
     </svg>
     <p class="dropzone-title">Drag &amp; drop your file here, or <span class="link-text">browse</span></p>
-    <p class="dropzone-hint" id="dropzone-hint">PDF, DOCX, or TXT &mdash; up to 20 MB</p>
+    <p class="dropzone-hint" id="dropzone-hint">PDF, DOCX, or TXT (up to 20 MB)</p>
   </div>
 
   <!-- Validation message -->
@@ -260,7 +260,8 @@
 
     <div class="action-bar-download">
       <select id="downloadFormat" class="action-bar-select" aria-label="Choose download format">
-        <option value="pdf" selected>PDF Document (.pdf)</option>
+        <option value="" selected disabled>Choose Download</option>
+        <option value="pdf">PDF Document (.pdf)</option>
         <option value="docx">Word Document (.docx)</option>
         <option value="txt">Plain Text (.txt)</option>
       </select>

@@ -5,18 +5,19 @@ See the top-level `README.md` for setup. Module responsibilities:
 
 | File | Responsibility |
 |---|---|
-| `app.py` | Flask routes, job orchestration |
-| `config.py` | All tunable constants |
-| `run.py` | Single-file local launcher (opens browser) |
-| `utils/pdf_extractor.py` | PDF → text (PyMuPDF) |
-| `utils/docx_extractor.py` | DOCX → text (python-docx) |
-| `utils/txt_extractor.py` | TXT → text |
-| `utils/text_cleaner.py` | Normalize extracted text |
-| `utils/chunking.py` | Token-accurate, overlapping chunking |
-| `utils/summarizer.py` | BART pipeline + map-reduce summarization |
-| `utils/file_validator.py` | Upload validation |
-| `utils/download_generator.py` | Writes `.txt` summary output |
-| `utils/helpers.py` | Small shared helpers |
+| `app.py` | Flask routes, job orchestration, rate limiting, security headers |
+| `config.py` | All tunable constants (presets, upload sizes, token boundaries) |
+| `run.py` | Single-file local launcher (starts server + opens browser) |
+| `utils/pdf_extractor.py` | PDF → text, raster diagrams, code blocks, TOC detection (PyMuPDF) |
+| `utils/docx_extractor.py` | DOCX → text extraction (python-docx) |
+| `utils/txt_extractor.py` | TXT → UTF-8 text extraction |
+| `utils/text_cleaner.py` | Preprocessing, slide header dedup, metadata extraction, 5-layer black box fix |
+| `utils/chunking.py` | Sentence splitting & token-bounded chunking (BART tokenizer) |
+| `utils/summarizer.py` | Extractive engine: TF-IDF, MMR, headings, balanced differences, highlights |
+| `utils/keywords.py` | Sub-linear TF-IDF keyword extraction |
+| `utils/file_validator.py` | Upload validation (MIME, magic bytes, 20 MB limit) |
+| `utils/download_generator.py` | Multi-format export builder: PDF (ReportLab), Word (python-docx), TXT |
+| `utils/helpers.py` | Shared utilities (UUID generator, human word counter) |
 
 ## Adding a new file format
 1. Add a `<format>_extractor.py` in `utils/` exposing `extract_text_from_<format>(filepath) -> str`.
@@ -24,12 +25,9 @@ See the top-level `README.md` for setup. Module responsibilities:
 3. Wire it into the `if/elif` in `app.py`'s `_run_summarization_job`.
 
 ## Adjusting summarization behavior
-All the knobs — chunk size, overlap, summary length, reduce-pass limits —
-live in `config.py`. No need to touch `utils/summarizer.py` for tuning.
+All core configuration knobs — chunk size, overlap, summary length presets (Short 25%, Medium 40%, Long 60%) — live in `config.py`. Tunable algorithmic weights (content bonuses, MMR $\lambda = 0.65$) are maintained in `utils/summarizer.py`.
 
 ## Running tests
-```
-pip install pytest
-pytest -m "not model"      # fast tests, no model download
-pytest                       # full suite, downloads BART on first run
+```bash
+pytest -v
 ```

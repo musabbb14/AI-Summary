@@ -1,0 +1,223 @@
+<USER_REQUEST>
+Below is the Chapter 3 from my agent, but I couldn't see the images. How can I see the architecture, the use case, all those diagrams, and confirm them? 
+CHAPTER THREE
+
+RESEARCH METHODOLOGY/SYSTEM ANALYSIS & DESIGN
+
+3.1 Development Approach
+
+(unchanged — already verified against your version history and implementation)
+
+This project was developed iteratively rather than through a single, linear design-then-build process. Each part of the system, file upload, text extraction, chunking, scoring, and output generation, was built as a working piece, tested by uploading real documents and inspecting the output, and revised whenever a problem surfaced, before development moved on to the next part.
+
+This approach is documented directly in the project's own version history. An early working version combined a Flask backend with the BART generative summarization model, a basic frontend, and background job polling. Successive versions fixed specific problems as they were discovered: a broken library shortcut call was replaced with a direct model invocation; multi-format download export was added; an accessibility pass followed later still. The most significant revision came after testing exposed a fundamental problem with the generative approach: BART was found to generate facts, names, and claims that did not appear anywhere in the source document, a behaviour known as hallucination and unacceptable in a tool intended to summarize technical and academic material faithfully. This finding led to the generative model being removed entirely and replaced with the purely extractive, TF-IDF-and-MMR-based scoring pipeline described in the rest of this chapter.
+
+Testing was not deferred to the end of development but happened continuously, alongside coding. Each significant defect encountered along the way was documented and fixed as it was found; examples include a heading-detection rule that was initially too broad, misclassifying almost any capitalised sentence as a heading and fragmenting documents into hundreds of tiny sections, and a sentence-splitting rule that initially broke abbreviations such as "Dr." and "Fig." into separate, meaningless fragments. Both were identified by uploading real documents, observing incorrect output, and revising the responsible code until the output was acceptable. An automated test suite was also written to catch regressions, all seventeen tests covering chunking, text extraction, download generation, routing, summarization, and file ingestion passing consistently, though the bulk of functional verification throughout development was manual, comparing summarizer output against the source document for accuracy, completeness, and readability.
+
+This process is best described as iterative prototyping: build a working piece, test it against real input, fix what is wrong, and move forward, rather than a formally named software development methodology chosen in advance. No fixed-length sprints, backlog, or formal planning ritual was used, so this project does not claim to follow Agile in a strict sense; equally, because design and implementation were revised repeatedly in response to testing rather than fully specified before coding began, it does not follow a Waterfall model either. The approach described above reflects how the system was actually built and refined over the course of development.
+
+3.2 Analysis of the Existing System
+
+(unchanged)
+
+Prior to this project, someone needing to condense a long document had, broadly, three available routes, and the limitations of each, several of which were already surfaced in the literature reviewed in Chapter Two, motivated much of the design described later in this chapter.
+
+The first is manual summarization: reading the document and writing a condensed version by hand. This produces the most reliable and contextually appropriate results of the three, since a human reader can judge relevance and nuance in ways no automated system yet fully replicates, but it does not scale. Time spent summarizing grows roughly in proportion to document length, and for a genuinely long document (a textbook chapter, say, or a lengthy technical report) that cost can be prohibitive for a student or professional working under time pressure, which is precisely the difficulty described in Chapter One.
+
+The second route is a generic extractive summarization tool, of the kind reviewed in Chapter Two. These are fast and require no manual reading, but, as discussed in Chapter Two, tools built around simple frequency or centroid scoring alone tend to select sentences independently of one another, without any mechanism to avoid near-duplicate selections; the resulting output can therefore read as a loosely connected list of extracted sentences rather than a coherent overview, and, as Chapter Two noted, several of these tools also impose input-length limits that make them unsuitable for genuinely long documents.
+
+The third route is a commercial abstractive summarization service, typically built on a model such as BART or one of its relatives discussed in Chapter Two. These generally produce more fluent, readable summaries than extractive tools, but they carry their own costs: most require an account, a subscription, or both once free usage limits are exceeded; the underlying generative models are bound by a fixed input-token ceiling, 1,024 tokens in BART's case; and, because the model generates new wording rather than reusing the source text verbatim, there is an inherent risk of the summary drifting from what the document actually says. None of the commercial services reviewed in Chapter Two, moreover, preserves non-prose content such as diagrams or code listings, which matters for the technical and academic documents this project is aimed at.
+
+Looking across all three routes together, a common thread emerges: none treats the length of the source document as a first-class constraint on system design. Manual summarization simply takes proportionally longer as a document grows; generic extractive tools tend to apply a compression ratio that is fixed regardless of how long the input is; and commercial abstractive services impose a hard ceiling dictated by their underlying model's architecture rather than by anything about the document itself. Recognising this shared weakness directly motivated the chunking and section-grouping strategy, which was designed specifically so that a document's summary length scales with its size rather than being capped at some arbitrary maximum chosen in advance.
+
+3.3 Analysis of the Proposed System
+
+The system built for this project addresses the three weaknesses identified above directly, through a purely extractive scoring pipeline rather than a generative one. Every sentence is scored against four weighted criteria, each targeting a different aspect of what makes a sentence worth including in a summary: Centrality (30%), how closely a sentence's content aligns with the document's overall theme; Specificity (25%), the sub-linear TF-IDF weight of a sentence's most distinctive terms; Density (15%), the ratio of content-bearing words to total words, penalising short or filler-heavy sentences; and a content-type Bonus (30%), a scoring boost applied to sentences containing definitions, headings, numerical data, or key terminology, informed by Edmundson's (1969) cue-based scoring discussed in Chapter Two.
+
+These four components combine, together with a positional multiplier grounded in Baxendale's (1958) topic-sentence finding discussed in Chapter Two, into a single per-sentence saliency score:
+
+BaseScore(Sᵢ) = (0.30 · Centrality(Sᵢ) + 0.25 · Specificity(Sᵢ) + 0.15 · Density(Sᵢ) + 0.30 · Bonus(Sᵢ)) × PositionWeight(Sᵢ)
+
+Centrality is computed as the cosine similarity between a sentence's TF-IDF vector and the document-level theme vector: Centrality(Sᵢ) = cos(v(Sᵢ), v_centroid). Specificity uses the sub-linear TF-IDF weighting discussed in Chapter Two, applying logarithmic dampening to raw term frequency so a term's tenth occurrence in a sentence does not count ten times as much as its first, before combining it with inverse document frequency.
+
+These weightings were not fixed arbitrarily at the outset; they were adjusted iteratively over the course of development by comparing summaries produced under different weighting schemes against a small set of manually reviewed sample documents, until the combination reported here was judged to produce the most consistently useful output across the range of document types the system is intended to handle, novels, academic papers, technical reports, and lecture-slide PDFs.
+
+Once every sentence has a BaseScore, the highest-scoring candidates are passed through Maximal Marginal Relevance (Carbonell & Goldstein, 1998; Chapter Two), which re-ranks them by weighing each candidate's own score against its similarity to sentences already selected:
+
+MMR(Sᵢ) = 0.65 · BaseScore(Sᵢ) − (1 − 0.65) · max Sim(Sᵢ, Sⱼ), for Sⱼ ∈ Selected
+
+With λ fixed at 0.65, this step is what prevents the final summary from collapsing into several near-restatements of whichever single theme scored highest, a known failure mode of relevance-only ranking discussed in Chapter Two.
+
+Beyond scoring and selection, the system removes the practical document-length ceiling that constrains all three alternatives reviewed earlier in this chapter, by splitting long documents into overlapping chunks, scoring each chunk independently, and grouping the resulting selections into a bounded, readable number of sections whose combined length scales with the size of the source document. It requires no account, subscription, or local installation beyond the Python environment, running entirely as a self-contained web application. It also extracts diagrams and preserves code listings verbatim from PDF documents, a capability that was not observed among the general-purpose tools reviewed in Chapter Two.
+
+The Centrality component described above is conceptually related to the graph-based centrality approach of LexRank (Erkan & Radev, 2004; Chapter Two), though implemented more simply here, through direct cosine similarity to a single document-level theme vector rather than full pairwise graph construction across every sentence. This simplification was a deliberate trade-off rather than an oversight: full graph construction scales quadratically with the number of sentences in a document, which becomes computationally expensive for the long, multi-chapter documents this project targets, whereas the centroid-based approach used here scales linearly and remains fast enough for interactive, browser-based use on ordinary hardware without GPU acceleration.
+
+The remaining two per-sentence components were included specifically to complement Centrality rather than duplicate it. Specificity captures sentences whose importance would otherwise be missed by a purely similarity-based score, since a sentence introducing a rare but important term may not closely resemble the document's overall theme vector even though the term itself is significant. Density, meanwhile, guards against the opposite failure: a short sentence built largely from common thematic words can sometimes score deceptively well on Centrality alone, and the Density penalty reduces the influence of such sentences on the final ranking. The Bonus component was added later in development, after early informal testing revealed that definitional and heading-adjacent sentences were sometimes under-selected by the other three components despite being exactly the kind of sentence a reader scanning a summary would want to see.
+
+3.3.1 Primary Use Case
+
+(unchanged)
+
+The system supports a single primary actor, the User, a student, researcher, lecturer, or other professional seeking to summarize a document, interacting with the system through a standard web browser with no specialised software installed. The precondition is that the user has a PDF, DOCX, or plain-text document ready for upload, and that the Flask server is running and reachable from the user's browser.
+
+Figure 3.1 presents this interaction as a use case diagram, showing the single actor together with the primary use case and its included and extended sub-cases, before the detailed step-by-step scenario that follows.
+
+Show Image{width="6.3in" height="4.010999562554681in"}
+
+The diagram shows a single actor, the User, associated with one primary use case, Summarize Document, reflecting the single-actor design discussed above. Four sub-cases are related to the primary use case by an include relationship, meaning each one is always performed as part of summarizing a document: uploading a document in one of the three supported formats, selecting a summary length, viewing the resulting summary together with its highlights and any diagrams or code listings preserved from a PDF, and downloading the summary in a chosen format. A fifth sub-case, cancelling an in-progress summarization, is related to the primary use case by an extend relationship rather than an include relationship, since it is only performed conditionally, when the user chooses to interrupt a job already running, rather than on every use of the system. No secondary actors, administrator roles, or system-to-system integrations appear in the diagram, consistent with the single-actor scope described above.
+
+Main Success Scenario:
+
+The user navigates to the application's landing page and is presented with a drag-and-drop upload area.
+The user selects, or drags, a document file into the upload area.
+The system validates the file's format and size, accepting it if it meets the requirements.
+The user selects a desired summary length (Short, Medium, Long, or Custom).
+The user submits the request; the system extracts the document's text, applies the extractive scoring pipeline, and formats the result into a structured summary.
+The system displays the completed summary, together with the separated Document Information section, on screen.
+The user downloads the summary in their preferred format (PDF, DOCX, or TXT).
+
+Alternate Flows: If the uploaded file is an unsupported format or exceeds the maximum size limit, the system rejects the upload and shows an explanatory error message rather than proceeding (step 3). If text extraction or scoring fails partway through, for example, on a corrupted file, the system reports a clear error message and lets the user try again, consistent with the reliability requirement. A further alternate flow, not shown above, allows the user to cancel a job already in progress at any point before step 6, returning the system to its initial state without requiring a page reload.
+
+Postcondition: A structured, downloadable summary of the uploaded document exists and remains available to the user for as long as their browser session stays active; no copy of the original document or its summary is kept on the server once the session ends, consistent with the data management approach described in Section 3.11.
+
+This single-actor structure is a deliberate simplification relative to multi-role systems that distinguish, for example, between ordinary users and administrators. Because the summarization task itself requires no privileged or administrative function, there is no content to moderate, no shared data to govern, and no per-user configuration to protect, introducing additional actor roles would have added authentication and authorisation complexity without a corresponding benefit to the system's core purpose. Should the system later be extended with features such as saved user accounts or usage analytics, revisiting this single-actor assumption would become necessary; under the current scope, it was not.
+
+3.4 System Architecture
+
+The system follows a three-tier architecture, separating presentation, application logic, and data handling into distinct layers that communicate only through well-defined interfaces, illustrated in Figure 3.2.
+
+The Presentation Tier is the browser-based frontend, built in plain HTML, CSS, and JavaScript. Its responsibilities are limited to collecting user input, sending the uploaded document to the backend over HTTP, polling a status endpoint at a dynamic interval of roughly 1.2 seconds to update the progress bar while a document is being processed, and rendering the completed summary, highlights, and any preserved diagrams or code listings. No summarization logic runs in the browser; the same backend API could, in principle, be reused by another client, such as a command-line tool, without modification to the scoring pipeline itself.
+
+The Application (Logic) Tier is the Flask backend, and does the actual work of the system. It is organised into several cooperating components rather than a single monolithic handler: a file-upload handler responsible for validation, a sliding-window rate limiter that throttles requests to ten per minute per client, a job manager that dispatches extraction and scoring to a background thread outside the request-response cycle so the initial request returns immediately with a job identifier, a status API that the frontend polls, a cancellation endpoint that allows a running job's background thread to be safely stopped mid-way, and a download generator that assembles the final PDF, DOCX, or TXT output on demand. Beneath the job manager, document ingestion, structural preservation, preprocessing, scoring, and output formatting each occupy their own internal stage within this tier, corresponding to the sequence described in detail in Sections 3.5 through 3.7.
+
+The Data Tier, unlike a conventional three-tier system, holds no persistent database. Each job's state, its progress, intermediate results, and final summary, is held in server memory only, keyed by a generated job identifier, and is automatically discarded one hour after completion. This deliberately ephemeral data tier reflects the stateless design discussed in Section 3.11: no uploaded document or generated summary is written to disk or retained beyond the lifetime of the job that produced it.
+
+Show Image{width="6.3in" height="5.141738845144357in"}
+
+How diagrams and code are preserved. The two rose-highlighted boxes in the Structural Preservation stage of Figure 3.2 mark this project's own contribution beyond a standard extractive pipeline. Both act on the PDF extraction path only, within the Application Tier, before any content reaches the scoring engine, so preserved material is never paraphrased, reordered by relevance score, or dropped for length. Diagrams are located by scanning every embedded image object on a page directly from the PDF's internal structure; images smaller than 60×60 pixels, such as icons, bullets, or logos, are filtered out, duplicate images are removed by their internal reference ID, and at most 12 diagrams per document are kept and embedded as labelled figures in the output. Code listings are identified using the exact font PyMuPDF reports for every span of text on a page: a block is classified as code when more than 60% of its characters are set in a monospaced font and it is at least 40 characters long, and detected code is pulled out of the prose stream entirely and reproduced exactly as written, in its own labelled section.
+
+This three-tier separation keeps the Presentation Tier free of processing logic, keeps the Application Tier responsive to new uploads while a long document is still processing in the background, since a single long-running summarization request would otherwise block the server thread handling it, and keeps the Data Tier simple by design, since the system's stateless, single-session use case does not require the persistence a conventional database tier would provide.
+
+3.5 System Process Flow
+
+(unchanged)
+
+Figure 3.3 illustrates the complete process a document goes through, from upload to the point a summary is ready for download, broken down into eight distinct, well-defined stages. Text extraction reads the raw content of the uploaded file, using a format-specific extractor for PDF, DOCX, or plain text. For PDF documents specifically, structural extraction runs alongside text extraction, detecting and pulling out diagrams and code listings before either reaches the scoring stage. Cleaning normalises the extracted text, correcting artefacts such as ligature characters and misplaced accent marks that commonly appear in PDF-derived text, and, for lecture-slide PDFs specifically, stripping repeated course codes, lecturer names, and slide numbers before the text reaches the scoring stage. Chunking splits text that exceeds the tokenizer's input limit into overlapping, sentence-aligned pieces. Sentence scoring applies the four weighted criteria to each chunk, processed in batches for efficiency. MMR re-ranking then weighs each top-scoring candidate against sentences already chosen, to reduce redundancy in the final selection. Section grouping combines the resulting per-chunk selections into a bounded number of readable, headed sections. Highlight extraction, the final stage, identifies a short list of key topics to display alongside the full summary.
+
+Show Image{width="6.3in" height="6.3in"}
+
+Representing the pipeline as a sequence of discrete, independently testable stages, rather than a single undifferentiated summarization routine, was a deliberate structural choice rather than an incidental consequence of how the code happened to be organised. It made automated testing considerably more straightforward, since each stage could be exercised in isolation with a small, hand-constructed input and a precisely known expected output, and it also made the system easier to reason about and modify during development, since a defect traced to, say, the cleaning stage could be fixed without needing to understand the scoring stage in detail.
+
+3.6 Chunking and Section-Grouping Strategy
+
+(unchanged)
+
+To keep memory usage bounded and allow per-chunk sentence scoring, the system splits long documents into overlapping, sentence-aligned chunks of approximately 900 tokens each, with a 60-token overlap between consecutive chunks (Beltagy et al., 2020; Chapter Two), using the Hugging Face BART tokenizer solely for accurate token counting during this phase, no generative language model is loaded or called anywhere in the pipeline. The chunking algorithm respects sentence boundaries rather than cutting purely on a fixed token count, so that no sentence is split across two chunks; this matters because a sentence divided mid-way would be meaningless to the scoring stage, which operates on whole sentences. Leaving a small overlap of shared context between consecutive chunks keeps meaning from being lost at chunk boundaries, since a sentence near the start of one chunk may rely on context established at the end of the previous one.
+
+Each chunk is scored independently using the TF-IDF, cosine-similarity, and MMR criteria described in Section 3.3. Rather than scoring chunks one at a time, several are processed together in a single batched scoring pass, which reduces the fixed per-call overhead, such as rebuilding the TF-IDF vocabulary, that would otherwise be repeated unnecessarily many times over for documents that produce a large number of chunks.
+
+For documents that produce a large number of chunks, a full textbook chapter, for example, may produce forty or more, presenting every chunk's mini-summary as its own separate section in the final output would be impractical for a reader to navigate. Instead, in a single additional grouping pass illustrated in Figure 3.4, neighbouring mini-summaries are combined into a smaller, capped number of sections, with each grouped section's target length scaling according to how many original chunks it represents. This ensures that a genuinely long document produces a proportionally longer, more detailed summary than a short one, rather than both being compressed toward the same fixed output length regardless of how much source material each contained.
+
+Show Image{width="6.3in" height="4.41in"}
+
+The 900-token chunk size and the 60-token overlap were both settled empirically during development, through repeated testing against sample documents, and are consistent with the sliding-window rationale established for transformer-based long-document processing by Beltagy et al. (2020). A chunk size large enough to preserve meaningful local context improved the quality of sentence scoring within each chunk, while a size small enough to leave comfortable headroom below the tokenizer's 1,024-token ceiling avoided truncation errors, which could otherwise occur when a chunk boundary happened to fall close to an unusually long sentence.
+
+3.7 Code and Diagram Extraction
+
+(unchanged, pixel threshold already stated generically here and now consistent with the corrected 60×60 figure elsewhere)
+
+For PDF documents specifically, the system performs two additional forms of extraction beyond plain prose text, in recognition that technical and academic PDFs frequently contain material that plain-text extraction alone would mishandle. PyMuPDF reports, for every piece of text on a page, the font used to render it, and text set in a monospaced font (a strong, reliable indicator of a code listing in a typeset PDF, since prose is conventionally set in a proportional font) is detected and separated from the surrounding prose before summarization takes place. Code is never passed through the scoring pipeline for possible paraphrasing or partial selection, since altering code even slightly risks silently corrupting it in a way that would be difficult for a reader to notice; instead, any detected code block is preserved exactly as written and shown in its own clearly labelled section, both on screen and in every downloaded format.
+
+Separately, embedded images above a minimum size threshold of 60×60 pixels are extracted directly from the PDF using PyMuPDF's image-extraction capability, with smaller images, typically decorative elements such as bullet icons, filtered out, and the remainder included in the final summary as labelled figures, up to a maximum of 12 per document, as described in Section 3.4. This threshold was chosen empirically rather than fixed in advance: early testing that extracted every embedded image indiscriminately produced summaries visually cluttered with small decorative elements, bullet icons, page borders, institutional logos, none of which carry meaningful content for a reader trying to understand the document's substance. Restricting extraction to images above the chosen threshold retains genuine diagrams, charts, and illustrations while discarding most of this visual noise, though the trade-off is that a small number of legitimately informative but physically small figures may occasionally be excluded along with the noise; this limitation is acknowledged rather than treated as fully resolved.
+
+3.8 The Five-Layer Table-of-Contents (TOC) Black-Box Fix
+
+Technical PDFs generated from publisher templates, particularly textbooks and lecture-note collections, frequently render their table-of-contents dot leaders in the ZapfDingbats symbol font rather than as ordinary text characters. Extracted naively, these dot leaders surface as a run of solid black squares (■), a rendering artefact rather than meaningful content, which, left unaddressed, pollutes sentence scoring by inflating the apparent density of a sentence and can appear directly inside a generated summary or downloaded file, undermining the system's usefulness for exactly the technical, publisher-formatted documents it is intended to handle.
+
+Because this artefact can re-enter the pipeline at several distinct points, rather than being fully eliminated once, the system defends against it at five separate stages rather than patching it in a single location:
+
+i. PDF extraction (utils/pdf_extractor.py): text spans rendered in the ZapfDingbats font are identified by their font descriptor at the point of extraction and excluded from the raw text stream before any further processing occurs.
+
+ii. Text cleaning (utils/text_cleaner.py): as a second line of defence for cases where a black-box character enters the text stream through a route other than a directly tagged ZapfDingbats span, the cleaning stage pattern-matches and strips runs of the black-square character from the extracted text.
+
+iii. Summarizer scoring (utils/summarizer.py): sentences consisting substantially of non-alphabetic filler characters are penalised by the Density component of the scoring formula described in Section 3.3, so that even a black-box fragment that survives the first two layers is unlikely to be scored highly enough for inclusion in a summary.
+
+iv. ReportLab canvas sanitisation (utils/download_generator.py): before a summary is rendered into a downloadable PDF, the text passed to the ReportLab canvas is sanitised a final time, ensuring the artefact cannot reappear in the exported document even if it were somehow present in the in-memory summary text.
+
+v. Frontend UI rendering: as a last-resort safeguard on the display side, the frontend applies the same character-stripping pattern before rendering summary text in the browser, so that a user viewing the on-screen result is never shown the artefact even in the unlikely event it survived every backend layer.
+
+No single one of these five layers is treated as sufficient on its own; the defence is deliberately redundant, on the reasoning that a rendering artefact capable of re-entering the pipeline through extraction, cleaning, scoring, or export needed to be addressed at each point it could plausibly reappear, rather than relying on a single fix applied once at the source.
+
+3.9 Functional Requirements
+
+(unchanged, renumbered from 3.8)
+
+i. The system shall allow a user to upload a PDF, DOCX, or TXT file through a web browser.
+
+ii. The system shall extract text content from the uploaded document, regardless of its length.
+
+iii. The system shall generate an extractive summary of the extracted text by scoring sentences against the weighted Centrality, Specificity, Density, and Content-Type criteria, re-ranking the top-scoring candidates with Maximal Marginal Relevance, and selecting the most representative sentences from each section.
+
+iv. The system shall allow the user to choose a summary length (Short, Medium, Long, or a custom percentage) before summarizing.
+
+v. The system shall display processing progress while a document is being summarized, and shall allow the user to cancel a job in progress.
+
+vi. The system shall extract code listings and diagrams from PDF documents where present.
+
+vii. The system shall allow the user to download the generated summary as a PDF, DOCX, or TXT file, under a filename of their choosing.
+
+viii. The system shall extract and display document metadata, such as course code, lecturer name, title, and date, separately from the summary body, where such metadata is present in the source document.
+
+ix. The system shall extract a short list of key highlights and keywords and display them alongside the full summary.
+
+x. The system shall limit the rate of requests accepted from a single client, to ten requests per minute, and apply standard web security headers to reduce the service's exposure to abuse.
+
+Each of these requirements traces directly back to one of the four objectives set out in Chapter One: requirements one, two, and six correspond to the multi-format ingestion objective; requirement three to the extractive scoring engine objective; requirements four, five, eight, and nine to the accessible interface objective; requirement seven to the multi-format export capability; and requirement ten to the general reliability and accessibility expected of a tool made available to the public rather than to any single objective in isolation. This traceability was maintained throughout development, not treated as an afterthought documented only once the system was complete, so every requirement listed here has a corresponding, demonstrable feature in the completed system rather than existing only as an aspiration in this chapter.
+
+3.10 Non-Functional Requirements
+
+(unchanged, renumbered from 3.9)
+
+i. Usability: The interface shall be simple enough for a non-technical user to operate without instructions, and shall be operable using a keyboard alone, for accessibility. This requirement follows directly from the project's aim, stated in Chapter One, of building a tool usable without programming knowledge; a summarization system that itself required a manual to operate would undermine that goal regardless of how good its underlying scoring was.
+
+ii. Performance: The system shall process documents using efficient sentence scoring and chunk-batched processing to minimise processing time on ordinary (non-GPU) hardware. This requirement is a direct consequence of the decision to favour a classical extractive pipeline over a generative model, and it shaped implementation choices such as the batched chunk scoring.
+
+iii. Portability: The system shall run on any machine with Python installed, without requiring proprietary software. Portability was treated as a precondition for the accessibility goals of the project overall: a tool that only ran on specific paid or licensed infrastructure would reproduce the very access barrier this project set out to remove, as discussed in Chapter One.
+
+iv. Reliability: The system shall handle malformed or unusual documents gracefully, reporting a clear error message rather than crashing. Because the system is intended to process a wide variety of real-world documents rather than a curated test set, reliability in the face of unexpected input was treated as a functional necessity rather than a secondary concern, and is reflected in the error-handling paths.
+
+These four requirements were treated as binding constraints on every design decision made in this chapter, not as aspirational goals to be addressed only if development time allowed. The choice of a purely extractive engine over a generative model was driven as much by the performance and portability requirements above as by the faithfulness argument made earlier in this chapter, since a generative model would have made both requirements substantially harder to satisfy on ordinary student hardware without a dedicated GPU.
+
+3.11 Data Management
+
+(unchanged, renumbered from 3.10, now cross-referenced from Section 3.4's Data Tier description)
+
+This system does not require a persistent database. Each summarization request is treated as a short-lived, stateless job: the uploaded file is read, processed, and then deleted from the server as soon as processing finishes, and the resulting summary is held in memory only for as long as the user's browser session needs it to build a download, with any completed job automatically cleared after one hour regardless of whether it has been downloaded. This decision was deliberate rather than an omission, the system has no requirement to permanently store user accounts, documents, or summaries between sessions, since every use case identified here begins and ends within a single browser session. The browser itself retains a short local history of the user's own recent summaries, entirely on the client side, without involving the server or any server-side storage at all.
+
+This stateless design also brings a direct privacy benefit consistent with the project's original motivation, discussed in Chapter One. Because no document content is retained on the server beyond the lifetime of a single request, there is no persistent store of user data that could later be exposed through a server compromise, misconfiguration, or unauthorised access, an advantage over cloud-based tools that may retain uploaded documents indefinitely for purposes such as model training or usage analytics, as noted of the commercial tools reviewed in Chapter Two. Were the system to be extended in the future to support features such as saved projects or shared team accounts, this stateless design would need to be revisited and a persistence layer introduced deliberately, rather than added incidentally; under the current scope, no such feature is required, and the simpler stateless approach was preferred for the reduced attack surface and implementation complexity it brings.
+
+3.12 Tools and Technologies Used
+
+(unchanged, renumbered from 3.11)
+
+i. Python 3: the primary backend programming language, chosen for its readable syntax and its ecosystem of libraries for file handling and text processing. The TF-IDF weighting, cosine similarity, and Maximal Marginal Relevance calculations that drive the scoring pipeline are implemented directly rather than through an existing machine-learning or NLP library such as scikit-learn or NLTK, keeping the scoring logic self-contained. The one external NLP component used is the Hugging Face BART tokenizer, solely for counting tokens during chunking.
+
+ii. Flask: a lightweight Python web framework used to build the API endpoints and manage file uploads, background jobs, and HTTP responses. Flask was selected over a heavier framework such as Django because the application's needs are limited to a small number of API routes and background-job handling, rather than the full-stack features (an object-relational mapper, an admin interface, built-in user authentication) that a larger framework provides but that this project does not require given its stateless design.
+
+iii. Hugging Face Transformers: the BART tokenizer (from the facebook/bart-large-cnn checkpoint) is used solely for accurate token counting during document chunking. No generative model is loaded or called at runtime, keeping memory usage low and avoiding the GPU dependency, discussed in Chapter Two.
+
+iv. PyMuPDF (fitz): used to extract prose text, code listings, and embedded diagrams from PDF files, and central to the multi-modal structure extraction discussed by Constantin et al. (2013) in Chapter Two. PyMuPDF was chosen over alternative PDF libraries because it exposes per-character font information directly, which the code-detection heuristic depends on, and because it provides a straightforward interface for extracting embedded images alongside text.
+
+v. python-docx: used both to extract text from uploaded DOCX files and to generate downloadable DOCX summaries, avoiding the need for a separate library for each direction of DOCX handling.
+
+vi. reportlab: used to generate downloadable PDF summaries, chosen for its fine-grained control over PDF layout, which is needed to reproduce the structured, headed-section format of the on-screen summary in the downloaded file, and which also carries the fourth layer of the TOC black-box defence described in Section 3.8.
+
+vii. HTML, CSS, and JavaScript: used to build a responsive, accessible frontend without relying on any external framework, keeping the client-side codebase small and avoiding a build step, which simplifies deployment given the project's portability requirement.
+
+A Dockerfile is also present in the project repository for optional containerised packaging, though it was not used to run or evaluate the version of the system described in this report, which was run directly with a local Python installation throughout development and testing.
+
+Beyond these individual libraries, the backend is organised into separate modules for file validation, extraction, text cleaning, chunking, scoring, and output generation rather than a single large script, a structural choice that paid off directly during the debugging process, since a defect could usually be narrowed down to one module before any code needed to be read closely.
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-09-09T23:37:21+01:00.
+</ADDITIONAL_METADATA>

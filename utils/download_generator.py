@@ -83,8 +83,8 @@ def _resolve_pdf_font(value):
 
 
 def _clean_heading_text(heading_str):
-    """Strip Table of Contents page number tails and symbols from headings."""
-    h = re.sub(r"[■□▪▫◾◽◼◻⬛⬜▮▯▬▲►▼◄◊○●◦\u25A0-\u25FF\u2B1B\u2B1C]", "", str(heading_str))
+    """Strip Table of Contents page number tails, control characters, and symbols from headings."""
+    h = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f■□▪▫◾◽◼◻⬛⬜▮▯▬▲►▼◄◊○●◦\u25A0-\u25FF\u2B1B\u2B1C\uE000-\uF8FF]", " ", str(heading_str))
     h = re.sub(r"References\s*\d{1,4}\b", "", h, flags=re.IGNORECASE)
     h = re.sub(r"\s+\d{1,4}(?:\s+\d{1,4})*$", "", h)
     return re.sub(r"\s{2,}", " ", h).strip()
@@ -103,6 +103,8 @@ def _pdf_safe_text(text):
     drops unprintable characters, and escapes markup for ReportLab.
     """
     s = str(text)
+    # Strip unprintable control characters that render as black boxes
+    s = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f]", " ", s)
     # Strip References with attached TOC page numbers or dingbats first
     s = re.sub(r"References\s*[■▪•●I\s]*\s*\d{1,4}\b", "", s, flags=re.IGNORECASE)
     # Strip Table of Contents page number attachments and black box dingbats
@@ -120,9 +122,9 @@ def _pdf_safe_text(text):
         "“": '"', "”": '"', "‘": "'", "’": "'",
         "\u00a0": " ", "\ufffd": "",
     }))
-    # Eradicate all geometric shapes, square dingbats, and PUA characters
-    # that cause ReportLab to switch to ZapfDingbats font
-    replacements = re.sub(r"[■□▪▫◾◽◼◻⬛⬜▮▯▬▲►▼◄◊○●◦\u25A0-\u25FF\u2B1B\u2B1C\uE000-\uF8FF]", " ", replacements)
+    # Eradicate all geometric shapes, square dingbats, control characters, and PUA characters
+    # that cause ReportLab to switch to ZapfDingbats font or show missing-glyph boxes
+    replacements = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f■□▪▫◾◽◼◻⬛⬜▮▯▬▲►▼◄◊○●◦\u25A0-\u25FF\u2B1B\u2B1C\uE000-\uF8FF]", " ", replacements)
     replacements = re.sub(r"(?<![A-Za-z0-9])®+(?=\s|[A-Za-z]|$)", "", replacements)
     # Strip residual page numbers preceded by dots
     replacements = re.sub(r"\.{3,}\s*(?:[ivxlc\d]+|\d{1,4})\b", "", replacements, flags=re.IGNORECASE)
@@ -130,7 +132,8 @@ def _pdf_safe_text(text):
     decomposed = unicodedata.normalize("NFKD", replacements)
     plain = "".join(ch for ch in decomposed if not unicodedata.combining(ch))
     plain = plain.encode("latin-1", errors="ignore").decode("latin-1")
-    plain = re.sub(r"[■▪]", "", plain)
+    plain = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f■▪]", " ", plain)
+    plain = re.sub(r"\s{2,}", " ", plain)
     return escape(plain)
 
 
@@ -191,8 +194,10 @@ def _split_sections(summary_text):
 
 
 def _strip_markdown_bold(text):
-    """Remove **bold** markers for contexts that don't support markdown."""
-    return text.replace("**", "")
+    """Remove **bold** markers for contexts that don't support markdown and scrub control characters."""
+    t = text.replace("**", "")
+    t = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f■□▪▫◾◽◼◻⬛⬜▮▯▬▲►▼◄◊○●◦\u25A0-\u25FF\u2B1B\u2B1C\uE000-\uF8FF]", " ", t)
+    return re.sub(r"\s{2,}", " ", t)
 
 
 # ---------------------------------------------------------------------------
@@ -225,11 +230,13 @@ def build_txt_file(original_filename, summary_text, highlights=None, code_blocks
     lines.append(plain_summary)
 
     if images:
+        images_sorted = sorted(images, key=lambda img: (img.get("page", 0), img.get("y", 0)))
         lines.append("")
         lines.append("Figures")
         lines.append("-" * 7)
-        for i, image in enumerate(images, start=1):
-            lines.append(f"[Figure {i}, page {image['page']} - see the PDF or DOCX download to view it]")
+        for i, image in enumerate(images_sorted, start=1):
+            fig_label = image.get("figure_number") or f"Figure {i}"
+            lines.append(f"[{fig_label}, page {image['page']} - see the PDF or DOCX download to view it]")
 
     if code_blocks and not ordered_elements:
         lines.append("")
@@ -246,7 +253,7 @@ def build_txt_file(original_filename, summary_text, highlights=None, code_blocks
 # DOCX
 # ---------------------------------------------------------------------------
 
-def build_docx_file(original_filename, summary_text, highlights=None, code_blocks=None, images=None, export_options=None):
+def build_docx_file(original_filename, summary_text, highlights=None, code_blocks=None, images=None, export_options=None, ordered_elements=None):
     """Returns the summary as a Word (.docx) file (bytes)."""
     if export_options is None:
         export_options = {}
@@ -304,36 +311,140 @@ def build_docx_file(original_filename, summary_text, highlights=None, code_block
             document.styles[style_name].font.name = font_family_val
             document.styles[style_name].paragraph_format.line_spacing = line_spacing_val
 
-    # No 'Summary of:' title or highlights — the summary starts directly
-    # with the intro line and document structure.
+    preserved = []
+    if ordered_elements:
+        preserved = [element for element in ordered_elements if element["type"] in ("image", "code")]
+        preserved.sort(key=lambda el: (el.get("page", 0), el.get("y", 0)))
+        summary_lines = summary_text.splitlines()
+        placements = []
+        ignored_anchor_words = {
+            "a", "an", "and", "as", "at", "be", "by", "for", "from",
+            "in", "is", "it", "of", "on", "or", "that", "the", "to",
+            "this", "was", "with",
+        }
+
+        min_start_index = 0
+        for idx, line in enumerate(summary_lines):
+            if line.lstrip().startswith("#"):
+                min_start_index = idx + 1
+                break
+        if min_start_index == 0 and summary_lines:
+            min_start_index = 1
+
+        last_placed_index = min_start_index
+
+        for element in preserved:
+            anchor_text = element.get("anchor", "")
+            if element.get("type") == "image":
+                fig_num = element.get("image", {}).get("figure_number", "")
+                if fig_num:
+                    anchor_text = f"{anchor_text} {fig_num}"
+            elif element.get("type") == "code":
+                anchor_text = f"{anchor_text} {element.get('text', '')[:100]}"
+
+            anchor_words = set(re.findall(r"[a-z0-9_]+", anchor_text.lower())) - ignored_anchor_words
+            sec_heading = element.get("section_heading", "")
+            if not sec_heading and element.get("type") == "image":
+                sec_heading = element.get("image", {}).get("caption_title", "")
+            section_words = set(re.findall(r"[a-z0-9_]+", sec_heading.lower())) - ignored_anchor_words
+
+            section_start = last_placed_index
+            section_end = len(summary_lines)
+
+            if section_words:
+                heading_candidates = []
+                for index, line in enumerate(summary_lines):
+                    if line.lstrip().startswith("#") and index >= last_placed_index:
+                        h_clean = re.sub(r"^\s*#+\s*(?:\d+[.)]?\s*)*", "", line)
+                        heading_words = set(re.findall(r"[a-z]+", h_clean.lower())) - ignored_anchor_words
+                        if not heading_words:
+                            continue
+                        inter = section_words & heading_words
+                        if inter:
+                            jaccard = len(inter) / len(section_words | heading_words)
+                            heading_candidates.append((jaccard, -index, index))
+                if heading_candidates:
+                    _, _, h_idx = max(heading_candidates)
+                    section_start = max(last_placed_index, h_idx + 1)
+                    following = [
+                        index for index in range(section_start, len(summary_lines))
+                        if summary_lines[index].lstrip().startswith("#")
+                    ]
+                    section_end = following[0] if following else len(summary_lines)
+
+            best_index = None
+            best_score = 0
+            for index in range(section_start, section_end):
+                line = summary_lines[index]
+                if line.lstrip().startswith("#") or line.lstrip().startswith("[[PRESERVED_"):
+                    continue
+                line_words = set(re.findall(r"[a-z0-9_]+", line.lower())) - ignored_anchor_words
+                score = len(anchor_words & line_words)
+                if score >= 2 and score > best_score:
+                    best_index, best_score = index + 1, score
+
+            if best_index is None:
+                best_index = section_end
+
+            placement_index = max(last_placed_index, min(len(summary_lines), best_index))
+            last_placed_index = placement_index
+            placements.append((placement_index, element))
+
+        for marker_index in range(len(placements) - 1, -1, -1):
+            line_index = min(len(summary_lines), placements[marker_index][0])
+            summary_lines.insert(line_index, f"[[PRESERVED_{marker_index}]]")
+        summary_text = "\n".join(summary_lines)
+
+    def append_docx_preserved(marker):
+        index = int(marker[12:-2])
+        element = placements[index][1]
+        if element["type"] == "code":
+            p = document.add_paragraph()
+            p.paragraph_format.left_indent = Inches(0.25)
+            run = p.add_run(element["text"])
+            run.font.name = "Courier New"
+            run.font.size = Pt(9.5)
+        else:
+            image = element["image"]
+            try:
+                document.add_picture(io.BytesIO(image["bytes"]), width=Inches(5.5))
+                fig_label = image.get("figure_number") or "Figure"
+                caption = document.add_paragraph(f"{fig_label} (page {image['page']})")
+                caption.style = document.styles["Caption"] if "Caption" in [s.name for s in document.styles] else caption.style
+            except Exception:
+                pass
+
+    def append_docx_text(content_text):
+        for line in content_text.splitlines():
+            marker = re.fullmatch(r"\[\[PRESERVED_(\d+)\]\]", line.strip())
+            if marker:
+                append_docx_preserved(marker.group(0))
+            elif line.strip():
+                document.add_paragraph(_strip_markdown_bold(line.strip()))
 
     # Use the fixed _split_sections that handles any ## heading
     intro, sections = _split_sections(summary_text)
     if intro:
-        # Render plain intro paragraphs (strip bold markers)
-        for para in intro.split("\n\n"):
-            if para.strip():
-                document.add_paragraph(_strip_markdown_bold(para.strip()))
+        append_docx_text(intro)
 
     for heading, level, content in sections:
-        # Map markdown levels: ## → h1, ### → h2, #### → h3
         docx_level = max(1, level - 1)
         document.add_heading(heading, level=docx_level)
-        for para in content.split("\n\n"):
-            if para.strip():
-                document.add_paragraph(_strip_markdown_bold(para.strip()))
+        append_docx_text(content)
 
-    if images:
+    if not ordered_elements and images:
+        images_sorted = sorted(images, key=lambda img: (img.get("page", 0), img.get("y", 0)))
         document.add_heading("Figures", level=2)
-        for i, image in enumerate(images, start=1):
+        for i, image in enumerate(images_sorted, start=1):
             try:
                 document.add_picture(io.BytesIO(image["bytes"]), width=Inches(5.5))
             except Exception:
                 continue
-            caption = document.add_paragraph(f"Figure {i} (page {image['page']})")
+            fig_label = image.get("figure_number") or f"Figure {i}"
+            caption = document.add_paragraph(f"{fig_label} (page {image['page']})")
             caption.style = document.styles["Caption"] if "Caption" in [s.name for s in document.styles] else caption.style
 
-    if code_blocks:
+    if not ordered_elements and code_blocks:
         document.add_heading("Code Listings", level=2)
         for i, code in enumerate(code_blocks, start=1):
             document.add_paragraph(f"Listing {i}", style="Intense Quote")
@@ -490,6 +601,8 @@ def build_pdf_file(original_filename, summary_text, highlights=None, code_blocks
     preserved = []
     if ordered_elements:
         preserved = [element for element in ordered_elements if element["type"] in ("image", "code")]
+        # Strictly sort preserved elements by original document page and y coordinate
+        preserved.sort(key=lambda el: (el.get("page", 0), el.get("y", 0)))
         summary_lines = summary_text.splitlines()
         placements = []
         ignored_anchor_words = {
@@ -497,49 +610,84 @@ def build_pdf_file(original_filename, summary_text, highlights=None, code_blocks
             "in", "is", "it", "of", "on", "or", "that", "the", "to",
             "this", "was", "with",
         }
+
+        # Find the end of initial document title/headings so diagrams are never placed before intro text
+        min_start_index = 0
+        for idx, line in enumerate(summary_lines):
+            if line.lstrip().startswith("#"):
+                min_start_index = idx + 1
+                break
+        if min_start_index == 0 and summary_lines:
+            min_start_index = 1
+
+        last_placed_index = min_start_index
+
         for element in preserved:
-            anchor_words = set(re.findall(r"[a-z0-9_]+", element.get("anchor", element.get("text", "")).lower()))
-            anchor_words -= ignored_anchor_words
-            section_words = set(re.findall(r"[a-z0-9_]+", element.get("section_heading", "").lower()))
-            section_words -= ignored_anchor_words
-            best_index = len(summary_lines)
-            best_score = 0
-            section_start = 0
+            anchor_text = element.get("anchor", "")
+            if element.get("type") == "image":
+                fig_num = element.get("image", {}).get("figure_number", "")
+                if fig_num:
+                    anchor_text = f"{anchor_text} {fig_num}"
+            elif element.get("type") == "code":
+                anchor_text = f"{anchor_text} {element.get('text', '')[:100]}"
+
+            anchor_words = set(re.findall(r"[a-z0-9_]+", anchor_text.lower())) - ignored_anchor_words
+            sec_heading = element.get("section_heading", "")
+            if not sec_heading and element.get("type") == "image":
+                sec_heading = element.get("image", {}).get("caption_title", "")
+            section_words = set(re.findall(r"[a-z0-9_]+", sec_heading.lower())) - ignored_anchor_words
+
+            section_start = last_placed_index
             section_end = len(summary_lines)
+
             if section_words:
                 heading_candidates = []
                 for index, line in enumerate(summary_lines):
-                    if line.lstrip().startswith("#"):
-                        heading_words = set(re.findall(r"[a-z0-9_]+", line.lower())) - ignored_anchor_words
-                        score = len(section_words & heading_words)
-                        if score:
-                            heading_candidates.append((score, index))
+                    if line.lstrip().startswith("#") and index >= last_placed_index:
+                        h_clean = re.sub(r"^\s*#+\s*(?:\d+[.)]?\s*)*", "", line)
+                        heading_words = set(re.findall(r"[a-z]+", h_clean.lower())) - ignored_anchor_words
+                        if not heading_words:
+                            continue
+                        inter = section_words & heading_words
+                        if inter:
+                            jaccard = len(inter) / len(section_words | heading_words)
+                            heading_candidates.append((jaccard, -index, index))
                 if heading_candidates:
-                    _, section_start = max(heading_candidates)
+                    _, _, h_idx = max(heading_candidates)
+                    section_start = max(last_placed_index, h_idx + 1)
                     following = [
-                        index for index in range(section_start + 1, len(summary_lines))
+                        index for index in range(section_start, len(summary_lines))
                         if summary_lines[index].lstrip().startswith("#")
                     ]
                     section_end = following[0] if following else len(summary_lines)
-            for index, line in enumerate(summary_lines):
-                if index < section_start or index >= section_end:
-                    continue
+
+            best_index = None
+            best_score = 0
+            for index in range(section_start, section_end):
+                line = summary_lines[index]
                 if line.lstrip().startswith("#") or line.lstrip().startswith("[[PRESERVED_"):
                     continue
                 line_words = set(re.findall(r"[a-z0-9_]+", line.lower())) - ignored_anchor_words
                 score = len(anchor_words & line_words)
                 if score >= 2 and score > best_score:
                     best_index, best_score = index + 1, score
-            placements.append((best_index, element))
-        ordered_placements = sorted(placements, key=lambda item: item[0])
-        for marker_index in range(len(ordered_placements) - 1, -1, -1):
-            line_index = min(len(summary_lines), ordered_placements[marker_index][0])
+
+            if best_index is None:
+                best_index = section_end
+
+            # Enforce strict serial ascending page ordering: placement index must be >= last_placed_index
+            placement_index = max(last_placed_index, min(len(summary_lines), best_index))
+            last_placed_index = placement_index
+            placements.append((placement_index, element))
+
+        for marker_index in range(len(placements) - 1, -1, -1):
+            line_index = min(len(summary_lines), placements[marker_index][0])
             summary_lines.insert(line_index, f"[[PRESERVED_{marker_index}]]")
         summary_text = "\n".join(summary_lines)
 
     def append_preserved(marker):
         index = int(marker[12:-2])
-        element = ordered_placements[index][1]
+        element = placements[index][1]
         if element["type"] == "code":
             story.append(Preformatted(element["text"], styles["Code"]))
         else:
@@ -549,7 +697,8 @@ def build_pdf_file(original_filename, summary_text, highlights=None, code_blocks
             width, height = image["width"], image["height"]
             scale = min(1.0, max_width / width, max_height / height)
             story.append(Image(io.BytesIO(image["bytes"]), width=width * scale, height=height * scale))
-            story.append(Paragraph(_pdf_safe_text(f"Figure (page {image['page']})"), caption_style))
+            fig_label = image.get("figure_number") or "Figure"
+            story.append(Paragraph(_pdf_safe_text(f"{fig_label} (page {image['page']})"), caption_style))
         story.append(Spacer(1, 14))
 
     def append_text(text, style):
@@ -598,7 +747,8 @@ def build_pdf_file(original_filename, summary_text, highlights=None, code_blocks
                 width, height = image["width"], image["height"]
                 scale = min(1.0, max_width / width, max_height / height)
                 story.append(Image(io.BytesIO(image["bytes"]), width=width * scale, height=height * scale))
-                story.append(Paragraph(_pdf_safe_text(f"Figure {i} (page {image['page']})"), caption_style))
+                fig_label = image.get("figure_number") or f"Figure {i}"
+                story.append(Paragraph(_pdf_safe_text(f"{fig_label} (page {image['page']})"), caption_style))
                 story.append(Spacer(1, 14))
             except Exception:
                 # Skip images that can't be decoded — better than
@@ -633,7 +783,7 @@ def build_download_file(file_format, original_filename, summary_text, highlights
 
     if file_format == "docx":
         return (
-            build_docx_file(original_filename, summary_text, highlights, code_blocks, images, export_options),
+            build_docx_file(original_filename, summary_text, highlights, code_blocks, images, export_options, ordered_elements),
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         )
     if file_format == "pdf":

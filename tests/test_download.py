@@ -40,7 +40,7 @@ def test_pdf_safe_text_removes_toc_and_black_boxes():
 
 
 def test_build_pdf_has_no_zapf_dingbats():
-    import fitz
+    import pymupdf as fitz
     summary = "## 4.12 Challenges In Iot With Big Data Analytics■201 References■202\n\nCloud computing details."
     pdf_bytes = build_pdf_file("test.pdf", summary)
     doc = fitz.open("pdf", pdf_bytes)

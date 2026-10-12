@@ -1,8 +1,5 @@
 """
-Tests for the map-reduce summarization logic.
-NOTE: these tests load the real BART model and will download weights on
-first run (requires internet + several hundred MB). Skip in offline CI
-with: pytest -m "not model"
+Tests for the extractive summarization logic (TF-IDF + MMR).
 """
 import os
 import sys

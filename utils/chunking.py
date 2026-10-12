@@ -94,6 +94,9 @@ def split_into_sentences(text):
     # 3. Protect known abbreviations
     protected = _ABBREV_RE.sub(lambda m: m.group(0).replace(".", _PLACEHOLDER), protected)
 
+    # 3b. Protect list item numbering (e.g. "1. ", "2. ", "10. ") so the number isn't severed from the sentence
+    protected = re.sub(r"(?<!\w)(\d{1,3})\.(?=\s+)", r"\1" + _PLACEHOLDER, protected)
+
     # 4. Split on sentence-ending punctuation followed by whitespace
     #    (now that we've hidden the false-positive dots).
     #    We also handle: "end." or "end!" at end-of-string.

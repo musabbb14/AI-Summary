@@ -1,0 +1,53 @@
+You are an expert academic research assistant, technical thesis editor, and citation specialist.
+
+I am preparing Chapter 3 (System Methodology & Architecture), Chapter 4 (System Implementation, Testing & Results), and Chapter 5 (Summary, Conclusion & Recommendations) of my B.Sc. Computer Science final year project report on "AI-Powered Technical Document Summarization System" to submit to my supervisor as standalone chapters.
+
+Each chapter must have its own standalone, dedicated reference list. Across the entire manuscript, there are exactly 41 citation occurrences mapping to 38 distinct master references.
+
+Please perform a thorough citation audit and generate three separate, standalone reference lists following these instructions:
+
+---
+
+### INSTRUCTIONS:
+
+1. **Chapter-by-Chapter Separation:**
+   - Scan the text/citations for Chapter 3, Chapter 4, and Chapter 5.
+   - Accurately map every in-text citation to its corresponding full reference from the master list of 38 references / 41 citation occurrences.
+   - Separate them into three distinct lists:
+     * **PART A: REFERENCES FOR CHAPTER 3 (Methodology & Design)**
+     * **PART B: REFERENCES FOR CHAPTER 4 (Implementation & Evaluation)**
+     * **PART C: REFERENCES FOR CHAPTER 5 (Conclusion & Future Work)**
+
+2. **Standalone Formatting:**
+   - If a reference is cited in multiple chapters (e.g., in both Chapter 3 and Chapter 4), include its full reference under BOTH chapters so that each chapter can be printed or sent to my supervisor as a 100% self-contained document.
+   - Format each list in strict **APA 7th Edition** style:
+     * Author(s) (Surname first, followed by initials).
+     * Year of publication in parentheses.
+     * Full title of article, conference paper, or book.
+     * Title of journal, proceedings, or publishing house (in italics).
+     * Volume, issue, page numbers, and DOI or URL where applicable.
+     * Alphabetized strictly by the first author's surname.
+     * Standard academic hanging indent format.
+
+3. **Coverage & Integrity Check:**
+   - Account for all 41 citation entries and verify that all 38 unique reference sources are properly attributed.
+   - Ensure zero phantom or missing citations (every in-text citation in a chapter MUST have a matching full reference in that chapter's list, and vice-versa).
+
+4. **Deliverable Format:**
+   Please provide the response in this exact structure:
+
+   #### 1. SUMMARY AUDIT TABLE
+   A concise table listing:
+   | Chapter | Chapter Title | In-Text Citations Count | Unique References Count |
+   | Chapter 3 | System Design & Methodology | [Count] | [Count] |
+   | Chapter 4 | Implementation, Testing & Results | [Count] | [Count] |
+   | Chapter 5 | Summary, Conclusion & Recommendations | [Count] | [Count] |
+   *(Total: 41 citation occurrences across 38 unique master references)*
+
+   #### 2. STANDALONE REFERENCE LISTS
+   - `### REFERENCES FOR CHAPTER 3` (Ready to copy directly into Chapter 3)
+   - `### REFERENCES FOR CHAPTER 4` (Ready to copy directly into Chapter 4)
+   - `### REFERENCES FOR CHAPTER 5` (Ready to copy directly into Chapter 5)
+
+---
+[PASTE YOUR DRAFT CHAPTER TEXT OR MASTER REFERENCE LIST AND IN-TEXT CITATIONS HERE]

@@ -19,7 +19,7 @@ This ensures only genuine document body content reaches the summarizer.
 """
 
 import re
-import fitz  # PyMuPDF
+import pymupdf as fitz  # PyMuPDF (modern import)
 from collections import Counter
 
 # PyMuPDF reports a "flags" number for each span of text describing
@@ -87,34 +87,83 @@ def _is_toc_line(text):
     return False
 
 
-def _is_context_heading(block):
+BULLET_PREFIX_RE = re.compile(
+    r"^[•\u2022\uf0b7\ufffd\u25aa\u25ab\u25cf\u25cb\u25a0\u25a1\x00-\x1f\x7f-\x9f*–—-]\s*"
+)
+
+
+def _is_context_heading(block, suppressed=None, suppressed_headers=None):
     """Identify a likely section label for associating later code/images."""
-    if block["is_header"] or block["is_footer"]:
+    if block.get("is_footer"):
         return False
+    norm = block.get("normalized", "")
+    hnorm = block.get("header_norm", norm)
+    if suppressed and norm in suppressed:
+        return False
+    if suppressed_headers and hnorm in suppressed_headers:
+        return False
+
     text = block["text"].strip()
-    if _is_toc_line(text):
+    if _is_toc_line(text) or _is_figure_caption(text):
         return False
+
+    # Skip person names / presentation metadata
+    if re.match(r'^(?:by\s+)?(?:dr\.?|prof\.?|engr\.?|mr\.?|mrs\.?|ms\.?)\s+', text, re.IGNORECASE):
+        return False
+    if re.match(r'^(?:by|prepared\s+by|presented\s+by|compiled\s+by)\s+', text, re.IGNORECASE):
+        return False
+    if re.match(r'^(?:\d{1,2}[-/]\w+[-/]\d{2,4}|20\d{2}[/\-]20\d{2})\s*$', text):
+        return False
+
     words = text.split()
-    if not words or len(words) > 8 or re.search(r"[.!?;,]$", text):
+    if not words or len(words) > 12:
         return False
+
+    # Allow question headings: "What is Distributed Computing System?"
+    if text.endswith("?"):
+        if words[0].lower() in ("what", "why", "how", "who", "when", "where", "can", "is", "are", "which") and len(words) <= 10:
+            return True
+        return False
+
+    if re.search(r"[.!;,]$", text):
+        return False
+
     if re.search(r"[{}();=<>]|\b(?:class|public|private|protected|static|void|return|new|javac)\b", text, re.IGNORECASE):
         return False
-    numbered = re.match(r"^\d+(?:\.\d+)*[.)]?\s+(.+)$", text)
+
+    numbered = re.match(r"^(\d+\.)+\d*\s+(.+)$", text)
     if numbered:
-        remainder = numbered.group(1).strip()
-        if not remainder or remainder[0].islower() or re.match(r"^[\d.]+(?:\s|$)", remainder):
+        remainder = numbered.group(2).strip()
+        rem_words = [w.lower().strip('"\'().[],:') for w in remainder.split()]
+        sentence_verbs = {"is", "are", "was", "were", "has", "have", "had", "they", "we", "can", "will"}
+        if any(w in sentence_verbs for w in rem_words):
             return False
+        if len(remainder.split()) <= 8 and (remainder[0].isupper() or not remainder[0].isalpha()):
+            return True
+        return False
+
     if _STRUCTURAL_PREFIX_RE.match(text):
         return True
-    if len(text) >= 6 and text.upper() == text:
+
+    if len(text) >= 4 and text.upper() == text and len(words) <= 8 and not re.search(r"\d{4}", text):
         return True
-    lower_words = {word.strip("\"'()[],:;").lower() for word in words}
-    prose_words = {
-        "a", "an", "and", "are", "as", "be", "because", "can", "for",
-        "from", "has", "have", "in", "is", "it", "may", "of", "on",
-        "or", "that", "the", "this", "to", "was", "were", "with",
-    }
-    return len(words) <= 6 and not (lower_words & prose_words) and text[0].isupper()
+
+    # Comparison and difference headings
+    if re.match(r"^(?:differences?|comparison|contrast)\s+(?:between|of)\s+.+", text, re.IGNORECASE):
+        return True
+
+    if len(words) <= 10:
+        lower_words = [w.lower().strip('"\'().[],:') for w in words]
+        sentence_verbs = {"is", "are", "was", "were", "has", "have", "had", "can", "could", "should", "will", "would", "that", "which", "who", "they", "we", "it", "you", "been", "being"}
+        if any(w in sentence_verbs for w in lower_words):
+            return False
+        edge_connectors = {"the", "a", "an", "and", "or", "but", "for", "with", "from", "in", "on", "at", "to", "by", "between"}
+        if lower_words[0] in edge_connectors or lower_words[-1] in edge_connectors:
+            return False
+        if words[0][0].isupper():
+            return True
+
+    return False
 
 def _is_monospace_span(span):
     return bool(span.get("flags", 0) & MONOSPACE_FLAG)
@@ -125,31 +174,52 @@ def _normalize_block_text(text):
     return re.sub(r"\s+", " ", text).strip().lower()
 
 
+def _normalize_header_text(text):
+    """Strip leading/trailing page numbers, roman numerals, and punctuation to match alternating running headers."""
+    t = re.sub(r"\s+", " ", text).strip().lower()
+    t = re.sub(r"^(?:page\s*)?(?:\d+|[ivxlcdm]+)\s*[:|\-.]?\s*", "", t)
+    t = re.sub(r"\s*[:|\-.]?\s*(?:page\s*)?(?:\d+|[ivxlcdm]+)$", "", t)
+    return t.strip()
+
+
 def _join_extracted_lines(lines):
-    """Join PDF lines without preserving artificial word-break hyphens."""
-    joined = ""
+    """Join PDF lines while preserving bullet points and distinct subheadings."""
+    result = []
+    current_para = []
     for line in lines:
-        line = line.strip()
-        if not line or _is_toc_line(line):
+        line_s = line.strip()
+        if not line_s or _is_toc_line(line_s):
             continue
-        if joined.endswith("-") and line[:1].islower():
-            joined = joined[:-1] + line
-        else:
-            joined = f"{joined} {line}".strip()
-    return joined
+        is_bullet = bool(BULLET_PREFIX_RE.match(line_s))
+        cleaned_line = BULLET_PREFIX_RE.sub("", line_s).strip()
+        if not cleaned_line:
+            continue
+        is_short_title = len(cleaned_line.split()) <= 6 and cleaned_line[0].isupper() and not cleaned_line.endswith((".", ",", ";"))
+        if is_bullet or is_short_title or (current_para and current_para[-1].endswith(":")):
+            if current_para:
+                result.append(" ".join(current_para))
+                current_para = []
+        current_para.append(cleaned_line)
+    if current_para:
+        result.append(" ".join(current_para))
+    return "\n\n".join(result)
 
 
 def _clean_prose_artifacts(text):
     """Remove standalone decorative glyphs, dingbats, and TOC index remnants."""
+    # Strip unprintable control characters that render as black boxes
+    text = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f]", " ", text)
     # Strip TOC page number artifacts: e.g. "■201" or "References■202" or "I201"
     text = re.sub(r"[■▪▫◾◽◼◻⬛⬜▮▯▬•●]\s*\d{1,4}\b", " ", text)
     text = re.sub(r"(?<=[a-zA-Z])I\d{1,4}\b", " ", text)
     # Strip dingbat square and geometric glyphs that cause black boxes
     text = re.sub(r"[■□▪▫◾◽◼◻⬛⬜▮▯▬▲►▼◄◊○●◦]", " ", text)
-    text = re.sub(r"[\u25A0-\u25FF\u2B1B\u2B1C\uF000-\uF8FF]", " ", text)
+    text = re.sub(r"[\u25A0-\u25FF\u2B1B\u2B1C\uE000-\uF8FF]", " ", text)
     text = re.sub(r"(?<![A-Za-z0-9])®+(?=\s|[A-Za-z]|$)", "", text)
     text = text.replace("\ufffd", "")
-    return re.sub(r"\s{2,}", " ", text).strip()
+    text = re.sub(r"[^\S\r\n]+", " ", text)
+    text = re.sub(r"\n\s*\n+", "\n\n", text)
+    return text.strip()
 
 
 def _split_inline_code(text):
@@ -261,6 +331,7 @@ def _collect_page_blocks(filepath):
 
                 block_text = _join_extracted_lines(block_lines)
                 normalized = _normalize_block_text(block_text)
+                header_norm = _normalize_header_text(block_text)
 
                 is_header_zone = (y_top / page_height) < HEADER_ZONE_FRACTION
                 is_footer_zone = (y_bot / page_height) > (1 - FOOTER_ZONE_FRACTION)
@@ -277,6 +348,7 @@ def _collect_page_blocks(filepath):
                 page_blocks.append({
                     "text":          block_text,
                     "normalized":    normalized,
+                    "header_norm":   header_norm,
                     "raw_lines":     block_lines,
                     "is_header":     is_header_zone,
                     "is_footer":     is_footer_zone,
@@ -297,43 +369,60 @@ def _collect_page_blocks(filepath):
 def _detect_repeated_decorations(all_pages):
     """
     Second pass: find repeated header/footer text across pages.
-    Returns a set of normalized strings that should be suppressed.
+    Returns:
+        suppressed: set of exact normalized strings that should be suppressed.
+        suppressed_headers: set of normalized header strings (without page numbers) to suppress.
     """
-    # Count how often each normalized string appears in a header/footer zone
     zone_counts = Counter()
+    zone_header_counts = Counter()
     for page_blocks in all_pages:
         for block in page_blocks:
             if block["is_header"] or block["is_footer"]:
                 norm = block["normalized"]
+                hnorm = block.get("header_norm", norm)
                 if len(norm) >= 3:
                     zone_counts[norm] += 1
+                if len(hnorm) >= 3:
+                    zone_header_counts[hnorm] += 1
 
-    # Also count blocks that appear identically on many pages even outside
-    # the strict header/footer zone (e.g. watermarks, running titles in
-    # the middle of the page margin area)
     all_counts = Counter()
+    all_header_counts = Counter()
     for page_blocks in all_pages:
-        seen_this_page = set()
+        seen_this_page_norm = set()
+        seen_this_page_hnorm = set()
         for block in page_blocks:
             norm = block["normalized"]
-            if norm not in seen_this_page and len(norm) >= 3:
+            hnorm = block.get("header_norm", norm)
+            if norm not in seen_this_page_norm and len(norm) >= 3:
                 all_counts[norm] += 1
-                seen_this_page.add(norm)
+                seen_this_page_norm.add(norm)
+            if hnorm not in seen_this_page_hnorm and len(hnorm) >= 3:
+                all_header_counts[hnorm] += 1
+                seen_this_page_hnorm.add(hnorm)
 
     suppressed = set()
+    suppressed_headers = set()
 
-    # Repeated in header/footer zone
     for norm, cnt in zone_counts.items():
         if cnt >= REPEATED_BLOCK_THRESHOLD:
             suppressed.add(norm)
 
-    # Appearing on every page (or almost every page) — running titles / watermarks
+    for hnorm, cnt in zone_header_counts.items():
+        if cnt >= REPEATED_BLOCK_THRESHOLD:
+            suppressed_headers.add(hnorm)
+
     total_pages = max(len(all_pages), 1)
+    # Alternating running headers appear on ~20%-50% of pages
+    header_threshold = max(2, int(total_pages * 0.15))
+    for hnorm, cnt in all_header_counts.items():
+        if cnt >= header_threshold:
+            suppressed_headers.add(hnorm)
+
     for norm, cnt in all_counts.items():
-        if cnt >= max(2, total_pages * 0.6):  # appears on 60%+ of pages
+        if cnt >= max(2, int(total_pages * 0.50)):
             suppressed.add(norm)
 
-    return suppressed
+    return suppressed, suppressed_headers
 
 
 def _detect_toc_pages(all_pages):
@@ -378,6 +467,66 @@ def _detect_toc_pages(all_pages):
     return toc_pages
 
 
+_FRONT_MATTER_HEADINGS = {
+    "preface", "foreword", "acknowledgment", "acknowledgments",
+    "acknowledgement", "acknowledgements", "about our author", "about our authors",
+    "about the author", "about the authors", "about the editor", "about the editors",
+    "contributors", "brief contents", "contents", "table of contents",
+    "list of figures", "list of tables", "copyright", "dedication",
+    "author biography", "author biographies", "biography", "biographies",
+}
+
+_LESSON_START_PATTERNS = [
+    re.compile(r"(?i)^\s*(?:chapter|lesson|unit|module|lecture|part)\s*(?:1|one|i\b)"),
+    re.compile(r"(?i)^\s*1(?:\.0|\.1)?\s*[:.\-]?\s+(?:introduction|background|overview|fundamentals|basics|getting started)"),
+    re.compile(r"(?i)^\s*1\.1\s+[A-Z]"),
+    re.compile(r"(?i)^\s*(?:abstract|executive\s+summary)\s*$"),
+]
+
+
+def _detect_lesson_start_page(all_pages, toc_pages):
+    """
+    Detect the page where primary lesson/chapter content begins,
+    allowing us to skip front-matter (copyright notices, publisher info,
+    preface, author biographies) so the summary starts directly with the lesson.
+    """
+    total_pages = len(all_pages)
+    if total_pages <= 1:
+        return 1
+
+    search_limit = min(40, max(5, int(total_pages * 0.25)))
+    start_search_from = (max(toc_pages) + 1) if toc_pages else 1
+
+    for page_num in range(start_search_from, min(total_pages + 1, search_limit + 1)):
+        page_blocks = all_pages[page_num - 1]
+        is_front_matter = False
+        for b in page_blocks[:4]:
+            t = b["text"].strip().lower()
+            clean_h = re.sub(r"^(?:[ivxlcdm\d\s\-.:]+)", "", t).strip()
+            clean_h = re.sub(r"[\d\s\-.:]+$", "", clean_h).strip()
+            if clean_h in _FRONT_MATTER_HEADINGS:
+                is_front_matter = True
+                break
+        if is_front_matter:
+            continue
+
+        for b in page_blocks:
+            clean_text = re.sub(r"[\x00-\x1f\x7f-\x9f]", " ", b["text"])
+            for line in clean_text.splitlines():
+                line_s = re.sub(r"\s+", " ", line).strip()
+                if len(line_s.split()) <= 12:
+                    for pat in _LESSON_START_PATTERNS:
+                        if pat.search(line_s):
+                            return page_num
+                if re.match(r"^\s*1\s*$", line_s):
+                    return page_num
+
+    if toc_pages and max(toc_pages) + 1 <= total_pages:
+        return max(toc_pages) + 1
+
+    return 1
+
+
 def _is_page_number(text):
     """True if this block is just a page number."""
     return bool(_PAGE_NUMBER_RE.match(text.strip()))
@@ -416,8 +565,9 @@ def extract_pdf_content(filepath, progress_callback=None):
         )
 
     # Pass 2: find repeated decorations and Table of Contents pages to suppress
-    suppressed = _detect_repeated_decorations(all_pages)
+    suppressed, suppressed_headers = _detect_repeated_decorations(all_pages)
     toc_pages = _detect_toc_pages(all_pages)
+    lesson_start_page = _detect_lesson_start_page(all_pages, toc_pages)
 
     # Pass 3: extract images and build clean text
     text_parts = []
@@ -433,28 +583,38 @@ def extract_pdf_content(filepath, progress_callback=None):
     with fitz.open(filepath) as doc:
         for page_idx, (page, page_blocks) in enumerate(zip(doc, all_pages), start=1):
             is_toc = page_idx in toc_pages
+            is_front_matter = (page_idx < lesson_start_page)
+
             for block in page_blocks:
-                # If this page is part of the Table of Contents, skip its prose
-                if is_toc:
+                # If this page is part of the Table of Contents or front-matter, skip its prose
+                if is_toc or is_front_matter:
                     continue
 
                 norm = block["normalized"]
+                hnorm = block.get("header_norm", norm)
                 text = block["text"]
 
                 # Always skip suppressed (repeated header/footer/watermark) blocks
                 if norm in suppressed:
                     continue
 
+                # Always skip running headers (repeated textbook title / chapter running heads)
+                if hnorm in suppressed_headers:
+                    if block["is_header"] or block["is_footer"] or (block["y_top"] / block["page_height"] < 0.18 and len(block["raw_lines"]) <= 2):
+                        continue
+
+                # Skip standalone publisher DOI stamps
+                if re.match(r"(?i)^\s*DOI:\s*10\.\d{4,9}/", text):
+                    continue
+
                 # Always skip pure page numbers or Table of Contents index lines
                 if _is_page_number(text) or _is_toc_line(text):
                     continue
 
-                # De-duplicate figure captions (keep first occurrence only)
+                # Skip standalone figure captions from body prose so they are not
+                # mistakenly turned into markdown headings or mixed into text
                 if _is_figure_caption(text):
-                    caption_key = re.sub(r"\s+", " ", text.strip().lower()[:60])
-                    if caption_key in seen_figure_captions:
-                        continue
-                    seen_figure_captions.add(caption_key)
+                    continue
 
                 # Route to code blocks vs prose
                 if block["is_code"]:
@@ -490,19 +650,21 @@ def extract_pdf_content(filepath, progress_callback=None):
                                 "type": "text", "text": segment_text,
                                 "page": page_idx, "y": block["y_top"] + segment_index / 1000,
                             })
-                    if _is_context_heading({**block, "text": prose}):
+                    if _is_context_heading({**block, "text": prose}, suppressed, suppressed_headers):
                         current_heading = prose
 
-            # Extract images from this page
-            if len(images) < MAX_IMAGES:
+            # Extract images from this page (skip front-matter pages like cover art and logos)
+            if len(images) < MAX_IMAGES and not is_front_matter:
                 _extract_page_images(doc, page, page_idx, images, seen_image_xrefs)
 
             for image in images:
                 if image["page"] == page_idx and "_ordered" not in image:
                     image["_ordered"] = True
+                    image_heading = image.get("caption_title") or current_heading
                     ordered_elements.append({
                         "type": "image", "image": image,
                         "page": page_idx, "y": image.get("y", page.rect.height),
+                        "section_heading": image_heading,
                     })
 
             if progress_callback:
@@ -532,6 +694,56 @@ def extract_pdf_content(filepath, progress_callback=None):
     }
 
 
+def _detect_figure_info_for_image(page, img_rect=None):
+    """
+    Detects the figure caption number (e.g. 'Figure 3.1', 'Figure 1.6', 'Fig. 2')
+    and caption title associated with an image on the page based on text proximity.
+    Returns (fig_num, caption_title).
+    """
+    try:
+        blocks = page.get_text("blocks")
+    except Exception:
+        return None, None
+
+    captions = []
+    for b in blocks:
+        # b: (x0, y0, x1, y1, text, block_no, block_type)
+        if len(b) < 5:
+            continue
+        text = str(b[4]).strip()
+        m = re.search(r"(?i)\b(?:figure|fig\.?)\s*(\d+(?:[.\-_]\d+)*)(?:\s*[:\-–—.]\s*([^\n\r]+))?", text)
+        if m:
+            fig_num = f"Figure {m.group(1)}"
+            cap_title = m.group(2).strip() if m.group(2) else ""
+            by0, by1 = b[1], b[3]
+            if img_rect is not None:
+                # Vertical distance to image boundary
+                if by0 >= img_rect[3] - 15:       # below image (most common)
+                    dist = by0 - img_rect[3]
+                elif by1 <= img_rect[1] + 15:     # above image
+                    dist = img_rect[1] - by1
+                else:
+                    dist = abs(by0 - img_rect[1])
+            else:
+                dist = 0
+            starts_with_fig = bool(re.match(r"(?i)^\s*(?:figure|fig\.?)\s*\d", text))
+            captions.append((0 if starts_with_fig else 1, dist, fig_num, cap_title))
+
+    if captions:
+        captions.sort(key=lambda x: (x[0], x[1]))
+        return captions[0][2], captions[0][3]
+    return None, None
+
+
+def _detect_figure_number_for_image(page, img_rect=None):
+    """
+    Detects the figure caption number (e.g. 'Figure 3.1', 'Figure 1.6', 'Fig. 2')
+    associated with an image on the page based on text proximity.
+    """
+    fig_num, _ = _detect_figure_info_for_image(page, img_rect)
+    return fig_num
+
+
 def _extract_page_images(doc, page, page_number, images, seen_image_xrefs):
     """Pulls out images on one page that are large enough to be a real
     diagram or figure, skipping ones already seen (a logo repeated on
@@ -552,13 +764,20 @@ def _extract_page_images(doc, page, page_number, images, seen_image_xrefs):
         if width < MIN_IMAGE_DIMENSION or height < MIN_IMAGE_DIMENSION:
             continue
 
+        rects = page.get_image_rects(xref)
+        img_rect = rects[0] if rects else None
+        fig_num, cap_title = _detect_figure_info_for_image(page, img_rect)
+        y_pos = min((rect[1] for rect in rects), default=page.rect.height) if rects else page.rect.height
+
         images.append({
-            "page":   page_number,
-            "bytes":  extracted["image"],
-            "ext":    extracted.get("ext", "png"),
-            "width":  width,
-            "height": height,
-            "y": min((rect[1] for rect in page.get_image_rects(xref)), default=page.rect.height),
+            "page":          page_number,
+            "bytes":         extracted["image"],
+            "ext":           extracted.get("ext", "png"),
+            "width":         width,
+            "height":        height,
+            "y":             y_pos,
+            "figure_number": fig_num,
+            "caption_title": cap_title,
         })
 
         if len(images) >= MAX_IMAGES:

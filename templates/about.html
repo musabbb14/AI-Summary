@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}About — AI Document Summarization System{% endblock %}
+{% block title %}About | AI Document Summarization System{% endblock %}
 {% block og_title %}About the AI Document Summarization System{% endblock %}
 
 {% block content %}
@@ -11,15 +11,15 @@
     Final Year Project
   </div>
   <h1 id="about-title">About This Project</h1>
-  <p class="page-hero-subtitle">Document Summarization Using TF-IDF and MMR with Diagram and Code Preservation for Technical PDF Documents &mdash; Gombe State University, Department of Computer Science.</p>
+  <p class="page-hero-subtitle">Document Summarization Using TF-IDF and MMR with Diagram and Code Preservation for Technical PDF Documents, Gombe State University, Department of Computer Science.</p>
 </section>
 
 <!-- Project Overview -->
 <section class="page-section" aria-labelledby="overview-heading">
   <h2 id="overview-heading" class="section-title">Project Overview</h2>
   <div class="page-card">
-    <p>This system is an undergraduate final-year Computer Science project that enables anyone &mdash; students, academics, researchers, and professionals &mdash; to upload a document of any length and receive back an intelligent, structured summary without requiring any programming knowledge.</p>
-    <p>The system implements a <em>multi-factor extractive summarization</em> pipeline using TF-IDF sentence scoring combined with Maximal Marginal Relevance (MMR) for diversity-guaranteed sentence selection. Long documents are split into overlapping chunks and each chunk is scored independently, enabling accurate summarization of documents of any length &mdash; from a single page to an entire textbook. Before summarization, the system automatically strips repeated page headers, footers, course codes, watermarks, and other non-content decorations to ensure only genuine document body text is processed.</p>
+    <p>This system is an undergraduate final-year Computer Science project that enables anyone, including students, academics, researchers, and professionals, to upload a document of any length and receive back an intelligent, structured summary without requiring any programming knowledge.</p>
+    <p>The system implements a <em>multi-factor extractive summarization</em> pipeline using TF-IDF sentence scoring combined with Maximal Marginal Relevance (MMR) for diversity-guaranteed sentence selection. Long documents are split into overlapping chunks and each chunk is scored independently, enabling accurate summarization of documents of any length, from a single page to an entire textbook. Before summarization, the system automatically strips repeated page headers, footers, course codes, watermarks, and other non-content decorations to ensure only genuine document body text is processed.</p>
   </div>
 </section>
 
@@ -84,7 +84,7 @@
     <div class="tech-card">
       <div class="tech-card-icon tech-icon--pytorch" aria-hidden="true">🔤</div>
       <h3 class="tech-card-name">Transformers (Tokenizer)</h3>
-      <p class="tech-card-desc">The Hugging Face Transformers library provides the BART tokenizer, used solely for accurate token counting during chunk splitting &mdash; no model inference is performed.</p>
+      <p class="tech-card-desc">The Hugging Face Transformers library provides the BART tokenizer, used solely for accurate token counting during chunk splitting (no model inference is performed).</p>
     </div>
     <div class="tech-card">
       <div class="tech-card-icon tech-icon--pdf" aria-hidden="true">📄</div>

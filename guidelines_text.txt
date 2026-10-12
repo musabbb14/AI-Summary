@@ -1,0 +1,582 @@
+=== PAGE 1 ===
+Guidelines for Preparation of Project Report 
+Page 1 of 10 
+ 
+ 
+ 
+ 
+ 
+ 
+GOMBE STATE UNIVERSITY 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+GUIDELINES FOR THE PREPARATION OF PROJECT REPORT FOR B.SC (HONS) 
+PROGRAMMES IN MATHEMATICS DEPARTMENT  
+ 
+ 
+ 
+
+
+=== PAGE 2 ===
+Guidelines for Preparation of Project Report 
+Page 2 of 10 
+ 
+INTRODUCTION  
+These guidelines for the preparation of project report is designed to aid undergraduate students in the 
+preparation of acceptable manuscripts and to serve as a procedural handbook for required steps leading to final 
+approval of project report by Mathematics Department, Gombe State University, Gombe.  
+These guidelines contain general requirements pertaining to style, organisation, format and reproduction which 
+apply to all projects in Mathematics Department. 
+ It is the students’ responsibility to study this document and use the content properly. In instances where 
+instructions in whatsoever circumstances differ, this guide takes precedence.  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+=== PAGE 3 ===
+Guidelines for Preparation of Project Report 
+Page 3 of 10 
+ 
+GUIDELINES FOR THE PREPARATION OF PROJECT REPORT FOR B.SC (HONS) 
+PROGRAMMES IN MATHEMATICS DEPARTMENT  
+All project reports must conform to the following guidelines: 
+A. GENERAL INSTRUCTIONS 
+1. All projects must be written in English. 
+2.  It should be typed in 1.5 line spacing except for abstract, tables, indented quotations and 
+footnotes which should be typed in single spacing leaving 1.5 inch margin on left side and 0.5 
+inch on the right, top and bottom sides. 
+3. The beginning of paragraphs should be indented. 
+4. Try not to break words at the end of lines, justify (full justification) your typing throughout. 
+Use font size 12, Times New Roman. 
+5. A maximum of three-tier system should be adopted for the headings in the text.  
+6. Table headings must appear above the table while the title of a figure must below the figure. 
+7. Data presentation: The data used in drawing graphs and charts must be presented in work as 
+appendices together with ethical clearance of the data.  
+8. After completion of the project, candidates will have to undergo a preliminary oral defence to 
+be arranged internally by the head of department at a convenient time before the end of 
+Second Semester. 
+9.  After the internal oral defence, the candidates will incorporate all the suggestions and 
+corrections and then submit the revised and corrected copies of the same in loose bound to the 
+department within one (1) week after the internal oral defence.  Final assessment will be done 
+by the external examiner and thereafter the internal examiner. The last date for the submission 
+of the revised and corrected project report will be informed by the Head of Department. 
+10. While submitting the project the student MUST attach a covering letter from their supervisor 
+certifying that the project confirms with all conditions stipulated in the approved guidelines. 
+11. After completion of the final oral defence and assessment, the examiners will finalize the 
+awards and submit the same to the Head of Department concerned. 
+12. A candidate who fails the examination shall be treated according to the university rules. 
+B. ORGANIZATIONAL SEQUENCE 
+ Coverage page 
+ Fly leaf 
+ Title page 
+ Declaration 
+ Certification 
+ Acknowledgement 
+ Abstract 
+ Contents 
+ List of tables 
+ List of figures 
+ List of plates 
+ List of appendices 
+ Abbreviations, Definitions, Glossaries and Symbols 
+ Introductory chapters 
+ Main chapters 
+ Summary, Conclusion and Recommendation 
+ References 
+
+
+=== PAGE 4 ===
+Guidelines for Preparation of Project Report 
+Page 4 of 10 
+ 
+ Appendices (if any) 
+1. Cover page 
+The following shall be on the cover page (written in capital letters) with dark blue colour 
+- 
+Title of the project report 
+- 
+Name of the student (surname first separated by a comma) with registration  number 
+below 
+- 
+Department, Faculty, University 
+- 
+B.Sc Computer Science or  B.Sc Mathematics or B.Sc Statistics 
+- 
+Month and Year of defence 
+ 
+2. Fly leaf 
+This is a blank page in white colour. This page should be of good quality as that on the inside 
+cover. 
+3. Title page 
+The following shall be on the title page (written in capital letters): 
+- 
+Title of the project 
+- 
+Name of the student (surname first) with registration  number below 
+- 
+A project submitted to the department of Mathematics, Gombe State University, Gombe, 
+in partial fulfilment of the requirements for the award of a B.Sc degree in 
+…………………………………….. 
+- 
+Month/Year of Graduation 
+4. Declaration 
+I hereby declare that this work is the product of my research effort, undertaken under 
+the supervision of …………………………….. and has not been presented and will not be 
+presented elsewhere for the award of any degree or certificate. All sources have been dully 
+acknowledged. 
+ 
+_________________ 
+ 
+____________________ 
+    __________________ 
+ 
+Name of student 
+ 
+ 
+Signature 
+ 
+ 
+Date 
+5. Certification/Approval 
+This is to certify that the project entitled “……………………” by ………………  meets 
+the regulations governing the award of Bachelor of Science degree of Gombe State 
+University, Gombe and is approved for its contribution to knowledge and literary 
+presentation. 
+…….…………………… 
+ 
+…….……………………   
+…….……………………  
+(Name)  
+ 
+ 
+  
+ 
+Signature 
+ 
+ 
+Date 
+Project supervisor 
+ 
+ 
+ 
+  …….…………………… 
+ 
+…….……………………   
+…….……………………  
+(Name)  
+ 
+ 
+  
+ 
+Signature 
+ 
+ 
+Date 
+Co-supervisor 
+
+
+=== PAGE 5 ===
+Guidelines for Preparation of Project Report 
+Page 5 of 10 
+ 
+ 
+…….…………………… 
+ 
+…….……………………   
+…….……………………  
+(Name)  
+ 
+ 
+  
+ 
+Signature 
+ 
+ 
+Date 
+Head of Department 
+ 
+…….…………………… 
+ 
+…….……………………   
+…….……………………  
+(Name and Address) 
+ 
+  
+ 
+Signature 
+ 
+ 
+Data 
+External Examiner 
+ 
+6. Acknowledgement 
+This should contain a brief note of appreciation to all those who contributed to the 
+success of the study. 
+7. Dedication 
+This is to dedicate the work to any interest person who has indirectly contributed to 
+the work or love one. 
+8. Abstract 
+The abstract should not exceed 200 words. It must be typed in single spacing and not 
+indented. It should briefly indicate brief background of the work, the statement of the 
+problem, the objectives, methodology, data collection and analysis, major findings/results and 
+conclusion. 
+9. Contents 
+This is a list of section and subsections of the project report and indicating the pages 
+as they occur in the body of the project. (This should be generated automatically) 
+10. List of Tables/Figures/Plates/Appendices 
+In the list of tables, figures, plates and appendices where the title runs more than one 
+line, the subsequent line must be single spaced and not indented. 
+NOTE:   
+(a) All tables must be typed in single spacing and the titles of the tables must appear at the top 
+extreme left of the table. All tables must be reflected in the body of the project. For example 
+Table 1.1, Table 2.1, etc and must equally appear on List of Tables. 
+(b) All figures must be properly/clearly drawn and the titles of the figures must appear at the 
+bottom of the figure. All figures must be reflected in the body of the project. For example 
+Figure 1.1, Figure 2.1, etc and must equally appear on the List of Figures. 
+11. Abbreviations, Definitions, Glossaries and Symbols 
+Explain all abbreviations and symbols. Define terms. 
+12. Main chapters 
+Chapter 1: Introduction 
+Chapter 2: Literature Review 
+Chapter 3: Materials and Methods/Methodology 
+
+
+=== PAGE 6 ===
+Guidelines for Preparation of Project Report 
+Page 6 of 10 
+ 
+Chapter 4: Results and Discussions  
+Chapter 5: Summary, Conclusions and Recommendations 
+Introduction: This chapter should consist, at least, of the following sections: 
+a. Introduction 
+b. Statement of the problem 
+c. Aim and Objectives 
+d. Significance/Justification of the study 
+e. Scope of the study 
+f. Statement of hypothesis (if any), etc. 
+Literature Review: This chapter reviews the study of others on the subject matter. It should be 
+focused, logically arranged and up to date (i.e it should contain current articles) and the gap you wish 
+to fill. 
+Materials and Methods/Methodology: This chapter should describe the methodology of the work 
+done and should take into consideration the study design (Conceptual/Structural Design), sampling 
+methods, techniques used in data collection and in analysis of the data (i.e the method how each of the 
+model can be achieved), model formulation. 
+Results: This chapter presents the result and interpretation of analysis of data collected, observations 
+made on information gathered in the materials and methods chapter. Explanation for the results 
+obtained in the study. Published work on the subject should be consulted and acknowledged. 
+Summary, Conclusions and recommendations: The summary will present highlights of the major 
+findings. The conclusion gives the inferences drawn from the findings. The recommendations shall 
+list possible ways of solving the problems identified by the work and areas for further exploration. 
+ 
+C.   
+B.SC COMPUTER SCIENCE 
+ 
+Chapter one: INTRODUCTION 
+- 
+Introduction (Background to the Study) 
+- 
+Statement of the Problem 
+- 
+Aim and Objectives of the Project 
+- 
+Significance/Justification of the study 
+- 
+Scope of the study 
+- 
+Definition of terms 
+- 
+Symbols, abbreviations, etc (optional) 
+- 
+Organization of the Study 
+ 
+Chapter two: LITERATURE REVIEW 
+- 
+Theoretical concepts 
+- 
+Empirical studies including the gap to be filled 
+(This must include current literature review) 
+
+
+=== PAGE 7 ===
+Guidelines for Preparation of Project Report 
+Page 7 of 10 
+ 
+CHAPTER THREE: RESEARCH METHODOLOGY  
+OR   
+ 
+         SYSTEM ANALYSIS AND DESIGN  
+- 
+State your Methodology clearly 
+- 
+Fact finding techniques 
+- 
+Programming language used e.g C++ including Database Management System 
+- 
+Conceptual/Structural  Framework 
+- 
+Networking and internet programming 
+Chapter four: SYSTEM IMPLEMENTATION AND TESTING 
+ 
+- 
+Results 
+- 
+Discussion 
+Chapter five: SUMMARY, CONCLUSION AND RECOMMENDATION 
+ 
+D.   
+ 
+B. SC MATHEMATICS 
+Chapter one: INTRODUCTION 
+- 
+Introduction/Background to the Study 
+- 
+Statement of the Problem 
+- 
+Aim and Objectives of the Project 
+- 
+Significance/Justification of the study 
+- 
+Scope of the study 
+- 
+Statement of Hypothesis (if any) 
+- 
+Definition of terms 
+- 
+Symbols, abbreviations, etc. 
+- 
+Organization of the Study 
+Chapter two: LITERATURE REVIEW 
+- 
+Theoretical concepts 
+- 
+Empirical studies including the gap to be filled 
+(This must include current literature review) 
+- 
+The literature review should contain information on previous work relevant to the project 
+topic and implications on the study. Students should try as much as possible to have up-
+to-date information on the topics. 
+ 
+Chapter three: METHODOLOGY 
+- 
+Conceptual  Framework 
+- 
+Formulations, formulae and procedures 
+- 
+Fact finding techniques 
+Chapter four: RESULTS AND DISCUSSIONS  
+- 
+Area of application (s) and results 
+
+
+=== PAGE 8 ===
+Guidelines for Preparation of Project Report 
+Page 8 of 10 
+ 
+- 
+Discussion 
+B.SC STATISTICS 
+Chapter one: INTRODUCTION 
+- 
+Introduction 
+- 
+Statement of the problem 
+- 
+Aims (motivation) 
+- 
+Objectives of the study 
+- 
+Significance of the study 
+- 
+Scope of the study 
+- 
+Statement of hypothesis 
+- 
+Definition of terms 
+- 
+Symbols, abbreviations, etc (optional) 
+Chapter: LITERATURE REVIEW 
+- 
+Theoretical concepts 
+- 
+Empirical studies including the gap to be filled 
+(This must include current literature review) 
+Chapter three: METHODOLOGY 
+- 
+Conceptual  Framework 
+- 
+Formulation, formulae and procedures 
+- 
+Fact finding techniques (e.g. questionnaires) 
+- 
+Analysis of Questionnaires (if any) 
+- 
+Use of packages like the SPSS etc 
+Chapter four: RESULTS AND DISCUSSIONS  
+- 
+Analysis of results 
+- 
+Inference and significance test 
+- 
+Areas of application 
+- 
+Discussion 
+Chapter five: SUMMARY, CONCLUSION AND RECOMMENDATION 
+C. 
+REFERENCES 
+The reference style is the American Psychological Association (APA) format as describe 
+below:   
+(A) Text Reference 
+1. All publications cited in the text should be presented in a list of references at the end of the 
+project report in alphabetical order. 
+2. A reference in the text should give only the author’s surname initials followed by the date of 
+publication in brackets e.g  
+ 
+One Work by One Author: 
+- 
+(2010) compared software methodology  
+- 
+In a study of software methodology comparison (Abubakar, 2010). 
+ 
+One Work By Multiple Authors: 
+
+
+=== PAGE 9 ===
+Guidelines for Preparation of Project Report 
+Page 9 of 10 
+ 
+- 
+Musa and Yakubu (2013) report that 
+- 
+According to (Musa and Yakubu, 2013) 
+- 
+Adamu et al.(2014) reported that 
+- 
+A research carried out by (Adamu et al.,2014) 
+- 
+ 
+If the reference cited has more than two authors, the surname of the first followed by “et al” 
+and then the date of the publication in brackets should be used. If the author’s name does not 
+form part of a sentence in the text, the reference shall be enclosed in a bracket after the 
+relevant word or at the end of the sentence of (Abubakar, 2000) or (Abubakar and Kabir, 
+2014) or (Umoh et al., 2014). References should not be cited on footnotes. 
+(B) Book References: References to books, brochures and book chapters  are given as follows: 
+(i) 
+If there is single author 
+Mukhopadhyay, P. (1998). Theory and methods of survey sampling. Prentice-Hall of 
+India Private Limited, New Delhi, India, pp 91-93. 
+(ii) 
+If two authors 
+Hogg, R. V. and Craig, A. T. (1972). Introduction to Mathematical Statistics, 3rd 
+Edition. Amerind Publishing Co. Pvt. Ltd., New Delhi, India, pp 226-228. 
+(iii) 
+Encyclopaedia or Dictionary 
+Adamu, R. T. (2013). The Encyclopaedia of Computer Science (4th ed). New York. 
+(C) Journal References: These should be written in the following forms:- 
+(i) 
+Single author 
+Brass, W. (1958): The distribution of births in Human Populations. International 
+Journal of Population studies. 12:51-72. 
+(ii) 
+Two authors 
+Sheps, M.C., and Perrin, E. B. (1964): The distribution of birth intervals under a 
+class of stochastic fertility models. Population studies. 17:321-331. 
+Similar for multiple authors. 
+(iii) 
+Journal Article in Press 
+Coke, U.O. and Arnold, T. (in press): Comparison Between Black Box and White 
+Box Testing. Journal of Computer Science. 
+ 
+(iv) 
+Abstract as Original Source 
+Bitrus, A., Sani, G.N., and Musa, Y,K, (2012). A Modelling Approach to Orphanage 
+Information System. [Abstract]. Journal of Computer Science. 12:34 
+(D) For proceedings: Those proceedings which are edited and published in the form of a book 
+should be listed the same way as for a book. 
+(E) For articles in a newspaper: Name of the writer should be indicated – if it is known 
+otherwise it should be listed as Anonymous; e.g Bello, J. (2002). Devaluating the Kenyan 
+Shilling. New Nigerian, February 3, P. 7. 
+(F) Authors with the same surname 
+K.A. Gomez (2013) and A.A. Gomez (2013) 
+(G) Work with no Author: 
+(Anonymous, 2014) 
+(H) Groups as Authors 
+The names of groups that serve as authors (e.g corporations, associations, government 
+agencies and study groups) are usually spelled out each time they appear in a text citation. 
+The names of some group authors are spelled out in the first citation and abbreviated 
+thereafter. 
+
+
+=== PAGE 10 ===
+Guidelines for Preparation of Project Report 
+Page 10 of 10 
+ 
+ World Health Organization [WHO] (2014) 
+Subsequent test (WHO,2014) 
+(I) The list of references should be arranged alphabetically by author’s name. If the list is also 
+mentioned with co-authors, the following order should be used: 
+(i) 
+Publications with single author, arranged according to publication; 
+(ii) 
+Publication of the same author with one co-author; 
+(iii) 
+Publication of the same author with more than one co-author; 
+D. SUBMISSION OF PROJECT REPORT 
+(i) 
+Prior to project examination 
+Loose bound copy of the project report signed by the supervisor should be given to the 
+Head of Department by the supervisor with a covering letter indicating that the project 
+report is ready for external examination. The Head of Department will manage to fix a 
+date for the oral examination and arrange to call the external examiner on that date to 
+conduct the examination. 
+(ii) 
+Binding - After the project examination 
+ The project should be permanently bound only after the oral examination making all 
+necessary corrections and alterations. 
+ The spine of each project should be lettered boldly in golden letters to indicate the degree, 
+month and year and the name of the candidate. 
+ Project binding should be in navy/dark blue colour.  
+ The title of the project, name of the candidate should appear boldly on the front page, the 
+registration number in parenthesis and date of submission should appear boldly in capital 
+letters. 
+E. NUMBER OF COPIES 
+Four (4) or (5) copies of the approved project should be submitted to the Head of Department. 
+Signed copies of the project are to be distributed as follows: 
+1. University library 
+2. Departmental library 
+3. Supervisor I 
+4. Supervisor II 
+5. Candidate 
+GRADING OF PROJECT 
+Grading of the project is as follows; Supervisor 30%, Oral Defence 30% and External Examination 
+40% and criteria for evaluation are attached for both the internal (oral defence) and external examiner 
+evaluation. Every aspect is clearly indicated and mark (s) indicated at each stage. 
+
+

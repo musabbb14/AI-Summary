@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Document Summarization Using TF-IDF and MMR with Diagram and Code Preservation for Technical PDF Documents — upload PDF, DOCX, or TXT files and receive intelligent, structured summaries. Final year project, Gombe State University." />
+  <meta name="description" content="Document Summarization Using TF-IDF and MMR with Diagram and Code Preservation for Technical PDF Documents: upload PDF, DOCX, or TXT files and receive intelligent, structured summaries. Final year project, Gombe State University." />
   <meta name="robots" content="noindex" />
   <meta property="og:title" content="{% block og_title %}TechPDF Summarizer – Diagram &amp; Code Preservation{% endblock %}" />
   <meta property="og:description" content="AI-powered document summarization for PDF, DOCX, and TXT files." />
@@ -21,7 +21,7 @@
 <!-- ===== HEADER ===== -->
 <header class="site-header" role="banner" id="site-header">
   <div class="header-inner">
-    <a href="{{ url_for('index') }}" class="brand" aria-label="AI Document Summarizer — Home">
+    <a href="{{ url_for('index') }}" class="brand" aria-label="AI Document Summarizer">
       <svg class="brand-icon" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
         <polyline points="14 2 14 8 20 8"/>
@@ -44,9 +44,6 @@
       </a>
       <a href="{{ url_for('help_page') }}" class="nav-link {% if request.endpoint == 'help_page' %}nav-link--active{% endif %}" {% if request.endpoint == 'help_page' %}aria-current="page"{% endif %}>
         Help
-      </a>
-      <a href="{{ url_for('evaluation') }}" class="nav-link {% if request.endpoint == 'evaluation' %}nav-link--active{% endif %}" {% if request.endpoint == 'evaluation' %}aria-current="page"{% endif %}>
-        Performance
       </a>
     </nav>
 
@@ -86,10 +83,6 @@
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
       Accessibility
     </a>
-    <a href="{{ url_for('evaluation') }}" class="mobile-nav-link {% if request.endpoint == 'evaluation' %}mobile-nav-link--active{% endif %}">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
-      Performance
-    </a>
   </nav>
 </div>
 
@@ -118,17 +111,7 @@
           </svg>
           <span class="footer-brand-name">DocSummarize</span>
         </div>
-        <p class="footer-description">Fast, private document summarization with automatic diagram, table, and code preservation.</p>
-        <div class="footer-badges">
-          <span class="footer-badge">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            Private &amp; Local
-          </span>
-          <span class="footer-badge">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-            Zero Hallucinations
-          </span>
-        </div>
+        <p class="footer-description">Fast document summarization with automatic diagram and code preservation.</p>
       </div>
 
       <!-- Navigation -->
@@ -138,7 +121,6 @@
           <a href="{{ url_for('index') }}" class="footer-link">Summarizer</a>
           <a href="{{ url_for('about') }}" class="footer-link">About the Project</a>
           <a href="{{ url_for('help_page') }}" class="footer-link">Help &amp; FAQ</a>
-          <a href="{{ url_for('evaluation') }}" class="footer-link">Performance &amp; Evaluation</a>
           <a href="{{ url_for('accessibility') }}" class="footer-link">Accessibility</a>
         </nav>
       </div>

@@ -86,11 +86,6 @@ logger = logging.getLogger(__name__)
 _lock = threading.Lock()
 _tokenizer = None
 
-# The extractive rewrite removed the generative BART model entirely.
-# _model is kept as None so the health-check endpoint can import it
-# without crashing.  It is never used for inference.
-_model = None
-
 
 class SummarizationCancelled(Exception):
     """Raised to stop a summarization job when the user clicks Cancel."""
@@ -449,9 +444,6 @@ _HEADING_PATTERNS = [
         r"(\s*[:\-–]\s*.+)?$",
         re.IGNORECASE,
     ),
-    # Numbered: "1. Introduction", "1.1 Background", "2.3.4 Details"
-    # Must have at least one word after the number.
-    re.compile(r"^(\d+\.)+\d*\s+\S"),
     # Roman numeral sections: "I. Introduction", "II. Methods"
     re.compile(r"^[IVXLCivxlc]+\.\s+[A-Z]\S"),
     # Lettered sections: "A. Background", "B. Methods"
@@ -475,7 +467,7 @@ _PROSE_CONNECTORS_EDGE = frozenset({
     "into", "onto", "upon", "over", "under", "about", "because", "since",
     "while", "although", "though", "however", "therefore", "thus",
     "which", "who", "whom", "whose", "when", "where", "if", "then",
-    "than", "as", "such", "also", "only", "just", "not", "no",
+    "than", "as", "such", "also", "only", "just", "not", "no", "between",
 })
 
 # Words that disqualify a line from being a heading if found ANYWHERE in it.
@@ -499,33 +491,29 @@ MIN_SECTION_WORDS = 15
 def _is_likely_heading(line):
     """
     Returns True if the line looks like a document section heading.
-
-    FIXED: The previous implementation used a Title Case pattern that
-    matched almost every capitalized sentence, fragmenting prose documents
-    into hundreds of tiny one-sentence "sections". The new implementation:
-
-    1. Only accepts explicitly structured heading patterns (Chapter N,
-       numbered sections, ALL-CAPS lines).
-    2. Title-case lines are accepted only if they are <= 5 words AND
-       the first/last word is not a prose connector AND no word is a
-       sentence verb/pronoun (is, are, was, he, she, etc.).
-    3. Allows joining words like 'and', 'of', 'or' in the MIDDLE of a
-       title (e.g. "Results And Discussion", "Methods Of Analysis").
-    4. Rejects lines that look like person names (Dr./Prof. + Name),
-       "BY NAME" patterns, or date/year metadata — these are slide
-       decorations, not headings.
     """
     line = line.strip()
     if not line or len(line) < 3:
         return False
 
+    # Never treat figure or table captions as section headings
+    if re.match(r"^\s*(?:fig(?:ure)?|table|diagram|chart|image|exhibit)\s*(\d+[.\-_0-9]*)?\s*[:\-–—.]?", line, re.IGNORECASE):
+        return False
+
+    # Allow question headings: "What is Distributed Computing System?"
+    if line.endswith("?"):
+        words = line.split()
+        if words and words[0].lower() in ("what", "why", "how", "who", "when", "where", "can", "is", "are", "which") and len(words) <= 10:
+            return True
+        return False
+
     # Reject lines that look like sentences (end with sentence punctuation)
-    if re.search(r"[.!?;,]$", line):
+    if re.search(r"[.!;,]$", line):
         return False
 
     # Reject very long lines — headings are short
     words = line.split()
-    if len(words) > 10:
+    if len(words) > 12:
         return False
 
     # Reject lines that look like Table of Contents entries or contain TOC page numbers
@@ -536,16 +524,13 @@ def _is_likely_heading(line):
     if re.search(r'^\s*(?:table\s+of\s+contents|brief\s+contents|contents)\s*$', line, re.IGNORECASE):
         return False
 
-    # ── Reject person names / metadata lines ─────────────────────────────
-    # These are slide decorations that must NEVER be treated as headings.
-    # "Dr. Yahaya Lamido", "Prof. Musa", "BY DR. SMITH"
+    # Reject person names / metadata lines
     if re.match(
         r'^(?:by\s+)?(?:dr\.?|prof\.?|engr\.?|mr\.?|mrs\.?|ms\.?)\s+',
         line, re.IGNORECASE
     ):
         return False
 
-    # "BY FIRSTNAME LASTNAME" (all caps or title case)
     if re.match(r'^(?:by|prepared\s+by|presented\s+by|compiled\s+by)\s+',
                 line, re.IGNORECASE):
         return False
@@ -560,24 +545,35 @@ def _is_likely_heading(line):
     ):
         return False
 
-    # Check against explicit structural patterns first
+    # Numbered heading: "1. Introduction", "1. Minicomputer Model"
+    numbered = re.match(r"^(\d+\.)+\d*\s+(.+)$", line)
+    if numbered:
+        remainder = numbered.group(2).strip()
+        rem_words = [w.lower().strip('"\'().[],:') for w in remainder.split()]
+        sentence_verbs = {"is", "are", "was", "were", "has", "have", "had", "they", "we", "can", "will"}
+        if any(w in sentence_verbs for w in rem_words):
+            return False
+        if len(remainder.split()) <= 8 and (remainder[0].isupper() or not remainder[0].isalpha()):
+            return True
+        return False
+
+    # Comparison and difference headings: "Differences between A and B", "Comparison between A and B"
+    if re.match(r"^(?:differences?|comparison|contrast)\s+(?:between|of)\s+.+", line, re.IGNORECASE):
+        if len(words) <= 12 and not re.search(r"[.!;,]$", line):
+            return True
+
+    # Check against explicit structural patterns (Chapter N, Section N, Roman numerals, etc.)
     for pattern in _HEADING_PATTERNS:
         if pattern.match(line):
             return True
 
-    # Title Case short lines (<=5 words):
-    # - No word anywhere may be a sentence verb/pronoun (is, are, was, etc.)
-    # - First/last word must not be a connector (the, a, and, for, etc.)
-    # - This allows "Results And Discussion" (conjunction in middle is fine)
-    if len(words) <= 5:
+    # Title Case short lines (<= 10 words):
+    if len(words) <= 10:
         lower_words = [w.lower().strip('"\'().[]') for w in words]
-        # Reject if ANY word is a sentence-level indicator
         if any(w in _PROSE_CONNECTORS_ANY for w in lower_words):
             return False
-        # Reject if first or last word is a connector word
         if lower_words[0] in _PROSE_CONNECTORS_EDGE or lower_words[-1] in _PROSE_CONNECTORS_EDGE:
             return False
-        # Require first word to be Title Case
         if words[0][0].isupper():
             return True
 
@@ -602,6 +598,23 @@ def detect_headings_and_sections(text):
     for line in lines:
         stripped = line.strip()
         if _is_likely_heading(stripped) and len(stripped) > 2:
+            if current_heading and stripped.strip().lower() == current_heading.strip().lower():
+                # Same heading repeated consecutively — keep in current section
+                continue
+
+            # Guard for comparison/differences headings and sub-item headers:
+            # If current heading is a comparison/difference heading (e.g. "Differences between X and Y"),
+            # subheadings/column labels (like "X", "Y", or items whose words are in the heading)
+            # or any candidate heading before the comparison has substantial body should be
+            # kept as content of the comparison section, not replace the section heading.
+            if current_heading and re.match(r"^(?:differences?|comparison|contrast)\s+(?:between|of)\s+.+", current_heading, re.IGNORECASE):
+                stripped_words = set(re.findall(r"\b\w{3,}\b", stripped.lower()))
+                heading_words = set(re.findall(r"\b\w{3,}\b", current_heading.lower()))
+                body_now = "\n".join(current_lines).strip()
+                if (stripped_words and stripped_words.issubset(heading_words)) or len(body_now.split()) < 15:
+                    current_lines.append(line)
+                    continue
+
             # Save previous section
             body = "\n".join(current_lines).strip()
             if body and current_heading is not None:
@@ -755,7 +768,135 @@ def _detect_bold_terms(text):
         if any(w.lower() in qualifier_words for w in words):
             result = _bold_once(term, result)
 
-    return result
+def _extract_comparison_points(heading, text, keep_ratio=0.65):
+    """
+    Detects if this section represents a comparison or contrast between two subjects
+    (e.g. 'Differences between Tightly Coupled and Loosely Coupled Systems' or
+    'Comparison of Monolithic and Microkernel') and extracts balanced, paired
+    comparison points contrasting Subject A and Subject B.
+
+    Returns a list of paired comparative sentences:
+      "Subject A: [description of Subject A], whereas Subject B: [description of Subject B]."
+    If no comparison structure is found, returns an empty list [].
+    """
+    if not heading:
+        return []
+
+    is_comparison = bool(re.search(
+        r"\b(?:differences?|comparison|contrast|distinction|versus)\b.*\b(?:between|of|and|vs\.?)\b|"
+        r"\b\w+\s+vs\.?\s+\w+\b",
+        heading,
+        re.IGNORECASE
+    ))
+    if not is_comparison:
+        return []
+
+    lines = [l.strip() for l in text.splitlines() if l.strip()]
+    if not lines:
+        return []
+
+    # Identify Subject A and Subject B from the heading
+    sub_a, sub_b = "", ""
+    m = re.search(
+        r"(?:differences?|comparison|contrast|distinction)\s+(?:between|of)\s+(.+?)\s+(?:and|vs\.?|with)\s+(.+)",
+        heading, re.IGNORECASE
+    )
+    if m:
+        sub_a, sub_b = m.group(1).strip(), m.group(2).strip()
+    else:
+        m2 = re.search(r"(.+?)\s+vs\.?\s+(.+)", heading, re.IGNORECASE)
+        if m2:
+            sub_a, sub_b = m2.group(1).strip(), m2.group(2).strip()
+
+    data_lines = lines
+    # Check if first two lines are column headers / subject names
+    if len(lines) >= 2 and not re.match(r"^\d+[.)]", lines[0]) and not re.match(r"^\d+[.)]", lines[1]):
+        words_0 = set(re.findall(r"\b\w{3,}\b", lines[0].lower()))
+        words_1 = set(re.findall(r"\b\w{3,}\b", lines[1].lower()))
+        h_words = set(re.findall(r"\b\w{3,}\b", heading.lower()))
+        if (words_0 and words_0.issubset(h_words)) or (words_1 and words_1.issubset(h_words)):
+            sub_a = lines[0]
+            sub_b = lines[1]
+            data_lines = lines[2:]
+
+    # Clean subject titles
+    sub_a = re.sub(r"[:\-–—]+$", "", sub_a).strip()
+    sub_b = re.sub(r"[:\-–—]+$", "", sub_b).strip()
+
+    pairs = []
+    # Pattern 1: Paired by duplicate item numbers (e.g. 1. ... 1. ... 2. ... 2. ...)
+    numbered_items = []
+    for dl in data_lines:
+        num_m = re.match(r"^(\d+)[.)]\s*(.+)$", dl)
+        if num_m:
+            numbered_items.append((int(num_m.group(1)), num_m.group(2).strip()))
+
+    from collections import defaultdict
+    by_num = defaultdict(list)
+    for num, content in numbered_items:
+        by_num[num].append(content)
+
+    has_pairs = any(len(items) >= 2 for items in by_num.values())
+    if has_pairs:
+        for num in sorted(by_num.keys()):
+            items = by_num[num]
+            if len(items) >= 2:
+                pairs.append((items[0], items[1]))
+            elif len(items) == 1:
+                pairs.append((items[0], ""))
+
+    # Pattern 2: Two blocks under Subject A and Subject B headings
+    if not pairs and sub_a and sub_b:
+        current_sub = None
+        block_a = []
+        block_b = []
+        for dl in data_lines:
+            dl_clean = re.sub(r"[:\-–—]+$", "", dl).strip().lower()
+            if sub_a.lower() in dl_clean:
+                current_sub = "a"
+                continue
+            elif sub_b.lower() in dl_clean:
+                current_sub = "b"
+                continue
+            if current_sub == "a":
+                block_a.append(dl)
+            elif current_sub == "b":
+                block_b.append(dl)
+        if block_a and block_b:
+            for a_item, b_item in zip(block_a, block_b):
+                pairs.append((a_item, b_item))
+
+    if pairs:
+        paired_sentences = []
+        for a_txt, b_txt in pairs:
+            a_clean = re.sub(r"^\d+[.)]\s*", "", a_txt).strip(".;, ")
+            b_clean = re.sub(r"^\d+[.)]\s*", "", b_txt).strip(".;, ")
+            # Clean leading bullet markers
+            a_clean = re.sub(r"^[-•●▪*]\s*", "", a_clean)
+            b_clean = re.sub(r"^[-•●▪*]\s*", "", b_clean)
+            if a_clean and b_clean:
+                sent = f"{sub_a}: {a_clean}, whereas {sub_b}: {b_clean}."
+            elif a_clean:
+                sent = f"{sub_a}: {a_clean}."
+            elif b_clean:
+                sent = f"{sub_b}: {b_clean}."
+            else:
+                continue
+            paired_sentences.append(sent)
+
+        n_pairs = len(paired_sentences)
+        if keep_ratio is not None:
+            if keep_ratio <= 0.3:
+                keep_n = 1
+            elif keep_ratio <= 0.5:
+                keep_n = max(1, min(n_pairs, 2))
+            else:
+                keep_n = n_pairs
+        else:
+            keep_n = n_pairs
+        return paired_sentences[:keep_n]
+
+    return []
 
 
 # ---------------------------------------------------------------------------
@@ -776,6 +917,9 @@ def _clean_heading(heading):
     - "Advantages"            → "Advantages"
     """
     original = heading.strip()
+    # Strip all unprintable control characters and geometric/black box dingbats
+    original = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f■□▪▫◾◽◼◻⬛⬜▮▯▬▲►▼◄◊○●◦\u25A0-\u25FF\u2B1B\u2B1C\uE000-\uF8FF]", " ", original)
+    original = re.sub(r"\s+", " ", original).strip()
 
     # ── Named structural label (Chapter / Unit / Lecture / …) ───────────────
     ch_match = re.match(
@@ -891,8 +1035,11 @@ def _format_structured_summary(section_results):
             # by the HTML/PDF renderers, while preserved code stays verbatim.
             formatted = s
 
-            # Clean up: remove leading bullet markers if present
-            formatted = re.sub(r"^[-•●▪*]\s+", "", formatted)
+            # Clean up: strip control characters and black box dingbats
+            formatted = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f■□▪▫◾◽◼◻⬛⬜▮▯▬▲►▼◄◊○●◦\u25A0-\u25FF\u2B1B\u2B1C\uE000-\uF8FF]", " ", formatted)
+            # Remove leading bullet markers if present
+            formatted = re.sub(r"^[-•●▪*]\s+", "", formatted.strip())
+            formatted = re.sub(r"\s{2,}", " ", formatted).strip()
 
             # Add as an indented point
             body_lines.append(f"  {formatted}")
@@ -1078,6 +1225,20 @@ def summarize_long_text(
         sec_heading = section["heading"]
 
         if not _has_enough_real_content(sec_text):
+            continue
+
+        # Check if this section is a comparison/difference section with paired contrast items
+        comp_points = _extract_comparison_points(sec_heading, sec_text, keep_ratio=keep_ratio)
+        if comp_points:
+            section_results.append({
+                "heading": sec_heading,
+                "sentences": comp_points,
+            })
+            if progress_callback:
+                progress_callback(
+                    "summarizing", sec_idx + 1, total_sections,
+                    stage_label=f"Extracting section {sec_idx + 1}/{total_sections}…",
+                )
             continue
 
         # Chunk this section

@@ -77,6 +77,9 @@ def clean_text(raw_text, preserve_newlines=True):
     # it's safe to drop rather than show as a stray symbol.
     text = "".join(ch for ch in text if not unicodedata.combining(ch))
 
+    # Strip unprintable control characters that render as black box glyphs
+    text = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f]", " ", text)
+
     # Drop private-use-area glyphs (show as boxes in most fonts)
     text = re.sub(r"[\uE000-\uF8FF]", "", text)
 
@@ -87,7 +90,7 @@ def clean_text(raw_text, preserve_newlines=True):
     # Convert black/white square bullets at start of line to standard markdown bullets
     text = re.sub(r"^[ \t]*[■□▪▫◾◽◼◻⬛⬜▮▯▬▲►▼◄◊○●◦\u25A0-\u25FF\u2B1B\u2B1C]\s*", "- ", text, flags=re.MULTILINE)
     # Replace all other square/geometric box glyphs with space to prevent black boxes
-    text = re.sub(r"[■□▪▫◾◽◼◻⬛⬜▮▯▬▲►▼◄◊○●◦\u25A0-\u25FF\u2B1B\u2B1C]", " ", text)
+    text = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f■□▪▫◾◽◼◻⬛⬜▮▯▬▲►▼◄◊○●◦\u25A0-\u25FF\u2B1B\u2B1C\uE000-\uF8FF]", " ", text)
 
     # Drop Unicode replacement character
     text = text.replace("\ufffd", "")
@@ -177,6 +180,8 @@ def clean_output_text(summary_text, metadata=None):
     text = re.sub(r"(?<=[a-zA-Z])I\d{1,4}\b", " ", text)
     text = re.sub(r"References\s*[■▪•●I\s]\s*\d{1,4}\b", "", text, flags=re.IGNORECASE)
 
+    # Strip unprintable control characters that render as black boxes
+    text = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f]", " ", text)
     # Strip stray Unicode box characters anywhere and non-line-start bullets
     text = re.sub(r"[■□▪▫◾◽◼◻⬛⬜▮▯▬▲►▼◄◊○●◦\u25A0-\u25FF\u2B1B\u2B1C\uE000-\uF8FF]", " ", text)
     text = re.sub(r"(?<!^)(?<![\n\r])[•●▸►→✓✔\uf0b7\uf0a7\uf0de\uf0e0\uf06e\uf076]", "", text, flags=re.MULTILINE)
@@ -273,8 +278,8 @@ def clean_output_text(summary_text, metadata=None):
     for line in text.splitlines():
         stripped = line.strip()
         if stripped.startswith("#"):
-            # Clean heading: strip trailing TOC page numbers (e.g. "Heading 201 References 202")
-            cleaned_h = re.sub(r"[■□▪▫◾◽◼◻⬛⬜▮▯▬▲►▼◄◊○●◦\u25A0-\u25FF\u2B1B\u2B1C]", "", stripped)
+            # Clean heading: strip trailing TOC page numbers, control chars, and dingbats (e.g. "Heading 201 References 202")
+            cleaned_h = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f■□▪▫◾◽◼◻⬛⬜▮▯▬▲►▼◄◊○●◦\u25A0-\u25FF\u2B1B\u2B1C\uE000-\uF8FF]", " ", stripped)
             cleaned_h = re.sub(r"References\s*\d{1,4}\b", "", cleaned_h, flags=re.IGNORECASE)
             cleaned_h = re.sub(r"\s+\d{1,4}(?:\s+\d{1,4})*$", "", cleaned_h)
             cleaned_h = re.sub(r"\s{2,}", " ", cleaned_h).strip()
@@ -286,9 +291,9 @@ def clean_output_text(summary_text, metadata=None):
                     final_lines.append(cleaned_h)
             continue
 
-        # For non-heading lines: strip any residual dot-leaders with page numbers
+        # For non-heading lines: strip any residual dot-leaders with page numbers, control chars, and dingbats
         cleaned_line = re.sub(r"\.{3,}\s*(?:[ivxlc\d]+|\d{1,4})\b", "", line, flags=re.IGNORECASE)
-        cleaned_line = re.sub(r"[■□▪▫◾◽◼◻⬛⬜▮▯▬▲►▼◄◊○●◦\u25A0-\u25FF\u2B1B\u2B1C]", " ", cleaned_line)
+        cleaned_line = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f■□▪▫◾◽◼◻⬛⬜▮▯▬▲►▼◄◊○●◦\u25A0-\u25FF\u2B1B\u2B1C\uE000-\uF8FF]", " ", cleaned_line)
         cleaned_line = re.sub(r"\s{2,}", " ", cleaned_line)
         if cleaned_line.strip():
             final_lines.append(cleaned_line)
@@ -707,8 +712,8 @@ def preprocess_document(raw_text):
 
     # Step 4: deduplicate repetitive lines.
     # Lines appearing 4+ times are fully removed (all occurrences).
-    # Lines appearing 2-3 times keep only the first occurrence.
-    deduped_lines = _deduplicate_lines(lines, min_occurrences=2)
+    # Lines appearing 3+ times keep only the first occurrence.
+    deduped_lines = _deduplicate_lines(lines, min_occurrences=3)
 
     # Step 4b: remove lecture slide course-header lines by pattern match
     # (catches "10-Sep-25 COSC 414: DISTRIBUTED OPERATING SYSTEM BY DR. …")
